@@ -17,62 +17,48 @@
             --font: 'Inter', sans-serif;
         }
 
+
         body {
-            background-color: transparent;
+            background-color: var(--bg);
             color: var(--text-bright);
             font-family: var(--font);
             margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            min-height: 100vh; /* Keeps it centered but allows growth */
             overflow-x: hidden;
         }
 
-        /* Wide horizontal container */
-        .auth-container {
+        .auth-card {
             background: var(--card-bg);
-            padding: 1.5rem 2.5rem;
-            border-radius: 16px;
-            width: 95%;
-            max-width: 900px;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 2.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            padding: 2rem; /* Slightly reduced padding for compactness */
+            border-radius: 20px;
+            width: 90%;
+            max-width: 320px; /* Narrowed slightly for better mobile/iframe fit */
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            margin: 10px;
         }
 
-        /* Left side: Branding & Toggle */
-        .brand-side {
-            flex: 1;
-            text-align: left;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            padding-right: 2rem;
-        }
+        h2 { margin: 0 0 0.2rem 0; font-weight: 600; font-size: 1.3rem; }
+        .subtitle { color: var(--text-faded); font-size: 0.85rem; margin-bottom: 1.5rem; min-height: 2.2em; line-height: 1.4; }
 
-        .brand-side h2 { margin: 0; font-size: 1.8rem; letter-spacing: -0.03em; }
-        .brand-side p { color: var(--text-faded); font-size: 0.9rem; margin: 0.5rem 0 1.5rem; }
-
-        /* Right side: The actual form fields */
-        .form-side {
-            flex: 2;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: flex-end;
-        }
-
-        .input-wrap {
-            flex: 1;
-            min-width: 180px;
-            text-align: left;
+        .input-group { 
+            text-align: left; 
+            margin-bottom: 1rem; 
+            max-height: 80px;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
-        .input-wrap.hidden {
-            display: none; /* In wide mode, display:none is cleaner than scaling */
+        .input-group.hidden { 
+            max-height: 0; 
+            opacity: 0; 
+            margin-bottom: 0; 
+            pointer-events: none;
+            transform: scaleY(0);
         }
 
         label { 
@@ -95,81 +81,70 @@
             font-size: 0.9rem;
             box-sizing: border-box;
             outline: none;
+            transition: border 0.2s ease;
         }
 
         input:focus { border-color: var(--accent); }
 
         .btn {
-            padding: 11px 24px;
+            width: 100%;
+            padding: 12px;
             border-radius: 8px;
             border: none;
             font-family: var(--font);
             font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 0.5rem;
             background: var(--accent);
             color: white;
-            cursor: pointer;
-            white-space: nowrap;
         }
 
-        .toggle-btn {
-            background: transparent;
-            color: var(--accent);
-            border: none;
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: 0.5; }
+        
+        .toggle-text {
+            margin-top: 1.2rem;
+            font-size: 0.75rem;
+            color: var(--text-faded);
             cursor: pointer;
-            padding: 0;
-            font-size: 0.9rem;
-            font-weight: 500;
             text-decoration: underline;
+            text-underline-offset: 3px;
         }
 
-        #msg { 
-            width: 100%; 
-            margin-top: 0.5rem; 
-            font-size: 0.8rem; 
-            min-height: 1rem; 
-        }
+        #msg { margin-top: 0.8rem; font-size: 0.8rem; min-height: 1.2rem; }
         .err { color: var(--error); }
         .success { color: #10b981; }
-
-        /* Responsive snap back for tiny iframes */
-        @media (max-width: 700px) {
-            .auth-container { flex-direction: column; text-align: center; gap: 1rem; }
-            .brand-side { border-right: none; padding-right: 0; }
-            .form-side { flex-direction: column; width: 100%; }
-            .input-wrap { width: 100%; }
-        }
     </style>
 </head>
 <body>
 
-    <div class="auth-container">
-        <div class="brand-side">
-            <h2 id="title">MeDoType</h2>
-            <p id="subtitle">Track your speed and progress.</p>
-            <button class="toggle-btn" onclick="manualToggle()" id="mode-hint">
-                Already a member? Login
-            </button>
+    <div class="auth-card">
+        <h2 id="title">MeDoType</h2>
+        <p class="subtitle" id="subtitle">Enter your email to get started</p>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="you@example.com">
         </div>
 
-        <div class="form-side">
-            <div class="input-wrap">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="you@example.com">
-            </div>
+        <div id="username-group" class="input-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="TypeMaster123">
+        </div>
 
-            <div id="username-wrap" class="input-wrap">
-                <label>Username</label>
-                <input type="text" id="username" placeholder="Typist123">
-            </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
 
-            <div class="input-wrap">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
+        <button class="btn" id="main-btn" onclick="handleAuth()">Continue</button>
+        
+        <p id="msg"></p>
 
-            <button class="btn" id="main-btn" onclick="handleAuth()">Go</button>
-            
-            <p id="msg"></p>
+        <div class="toggle-text" onclick="manualToggle()" id="mode-hint">
+            Already have an account? Login
         </div>
     </div>
 
@@ -183,45 +158,51 @@
 
         function setMode(loginMode) {
             isLogin = loginMode;
-            const userWrap = document.getElementById('username-wrap');
+            const userGroup = document.getElementById('username-group');
             const title = document.getElementById('title');
             const subtitle = document.getElementById('subtitle');
             const btn = document.getElementById('main-btn');
             const hint = document.getElementById('mode-hint');
 
             if (isLogin) {
-                userWrap.classList.add('hidden');
+                userGroup.classList.add('hidden');
                 title.innerText = "Welcome Back";
-                subtitle.innerText = "Pick up where you left off.";
+                subtitle.innerText = "Login to view your stats";
                 btn.innerText = "Login";
                 hint.innerText = "Need an account? Sign Up";
             } else {
-                userWrap.classList.remove('hidden');
-                title.innerText = "MeDoType";
-                subtitle.innerText = "Track your speed and progress.";
-                btn.innerText = "Sign Up";
-                hint.innerText = "Already a member? Login";
+                userGroup.classList.remove('hidden');
+                title.innerText = "Create Profile";
+                subtitle.innerText = "Choose a username to start tracking";
+                btn.innerText = "Create Account";
+                hint.innerText = "Already have an account? Login";
             }
         }
 
-        function manualToggle() { setMode(!isLogin); }
+        function manualToggle() {
+            setMode(!isLogin);
+        }
+
         setMode(false);
 
         async function handleAuth() {
             if (isCooldown) return;
+            
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const username = document.getElementById('username').value;
             const msgEl = document.getElementById('msg');
+            const btnEl = document.getElementById('main-btn');
 
             if (!email || !password || (!isLogin && !username)) {
-                msgEl.innerText = "Fill all fields.";
+                msgEl.innerText = "Please fill in all fields.";
                 msgEl.className = 'err';
                 return;
             }
 
             isCooldown = true;
-            msgEl.innerText = "Working...";
+            btnEl.disabled = true;
+            msgEl.innerText = "Processing...";
             msgEl.className = "";
 
             let result;
@@ -230,7 +211,7 @@
             } else {
                 result = await _supabase.auth.signUp({ 
                     email, password, 
-                    options: { data: { username } } 
+                    options: { data: { username: username } } 
                 });
             }
 
@@ -238,6 +219,7 @@
                 msgEl.innerText = result.error.message;
                 msgEl.className = 'err';
                 isCooldown = false;
+                btnEl.disabled = false;
             } else {
                 msgEl.innerText = isLogin ? 'Success!' : 'Check your email!';
                 msgEl.className = 'success';
