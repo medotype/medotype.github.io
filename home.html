@@ -195,7 +195,7 @@
 
         async function loadWords() {
             try {
-                const response = await fetch('https://raw.githubusercontent.com/tuffzinc/MeDoType/refs/heads/main/data/wordlist.json');
+                const response = await fetch('data/json/wordlistcommon.json');
                 wordsList = await response.json();
                 resetGame();
             } catch (e) {
