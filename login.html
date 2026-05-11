@@ -120,10 +120,10 @@
 
         <div class="input-group">
             <label>Email</label>
-            <input type="email" id="email" placeholder="you@example.com" onblur="checkUserType()">
+            <input type="email" id="email" placeholder="you@example.com">
         </div>
 
-        <div id="username-group" class="input-group hidden">
+        <div id="username-group" class="input-group">
             <label>Username</label>
             <input type="text" id="username" placeholder="TypeMaster123">
         </div>
@@ -147,15 +147,8 @@
         const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        let isLogin = false; // Default to signup for new feel
+        let isLogin = false; 
         let isCooldown = false;
-
-     
-        async function checkUserType() {
-            const email = document.getElementById('email').value;
-            if (!email.includes('@')) return;
-
-        }
 
         function setMode(loginMode) {
             isLogin = loginMode;
@@ -184,62 +177,60 @@
             setMode(!isLogin);
         }
 
+        // Initialize
         setMode(false);
 
-async function handleAuth() {
-    if (isCooldown) return;
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const username = document.getElementById('username').value;
-    const msgEl = document.getElementById('msg');
-    const btnEl = document.getElementById('main-btn');
+        async function handleAuth() {
+            if (isCooldown) return;
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+            const msgEl = document.getElementById('msg');
+            const btnEl = document.getElementById('main-btn');
 
-    if (!email || !password || (!isLogin && !username)) {
-        msgEl.innerText = "Please fill in all fields.";
-        msgEl.className = 'err';
-        return;
-    }
+            if (!email || !password || (!isLogin && !username)) {
+                msgEl.innerText = "Please fill in all fields.";
+                msgEl.className = 'err';
+                return;
+            }
 
-    if (!isLogin && username.length < 3) {
-        msgEl.innerText = "Username must be at least 3 characters.";
-        msgEl.className = 'err';
-        return;
-    }
+            if (!isLogin && username.length < 3) {
+                msgEl.innerText = "Username must be at least 3 characters.";
+                msgEl.className = 'err';
+                return;
+            }
 
-    isCooldown = true;
-    btnEl.disabled = true;
-    msgEl.innerText = "Processing...";
-    msgEl.className = "";
+            isCooldown = true;
+            btnEl.disabled = true;
+            msgEl.innerText = "Processing...";
+            msgEl.className = "";
 
-    let result;
-    if (isLogin) {
-        result = await _supabase.auth.signInWithPassword({ email, password });
-    } else {
-result = await _supabase.auth.signUp({ 
-    email, 
-    password, 
-    options: { 
-        data: { 
-            username: username
-        } 
-    } 
-});
+            let result;
+            if (isLogin) {
+                result = await _supabase.auth.signInWithPassword({ email, password });
+            } else {
+                result = await _supabase.auth.signUp({ 
+                    email, 
+                    password, 
+                    options: { 
+                        data: { username: username } 
+                    } 
+                });
+            }
 
-    if (result.error) {
-        msgEl.innerText = result.error.message;
-        msgEl.className = 'err';
-    } else {
-        msgEl.innerText = isLogin ? 'Success! Loading...' : 'Account created! Welcome.';
-        msgEl.className = 'success';
-        setTimeout(() => window.location.href = 'account.html', 1000);
-    }
-
-    setTimeout(() => {
-        isCooldown = false;
-        btnEl.disabled = false;
-    }, 2000);
-}
+            if (result.error) {
+                msgEl.innerText = result.error.message;
+                msgEl.className = 'err';
+                isCooldown = false;
+                btnEl.disabled = false;
+            } else {
+                msgEl.innerText = isLogin ? 'Success! Loading...' : 'Account created! Welcome.';
+                msgEl.className = 'success';
+                // Change 'home.html' to whatever your post-login page is
+                setTimeout(() => window.location.href = 'home.html', 1000);
+            }
+        }
     </script>
 </body>
 </html>
