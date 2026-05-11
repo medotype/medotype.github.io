@@ -96,11 +96,8 @@
 </head>
 <body>
 
-    <div id="loading-overlay">Loading...</div>
 
     <div class="auth-card">
-        <div class="avatar-circle" id="avatar-init">?</div>
-        
         <h2 id="display-username">Typist</h2>
         <p class="subtitle" id="display-email">user@example.com</p>
 
@@ -115,7 +112,6 @@
         async function initProfile() {
             const { data: { session }, error } = await _supabase.auth.getSession();
 
-            // Redirects to login.html if not signed in
             if (!session || error) {
                 window.location.href = 'login.html';
                 return;
@@ -126,9 +122,6 @@
 
             document.getElementById('display-username').innerText = username;
             document.getElementById('display-email').innerText = user.email;
-            document.getElementById('avatar-init').innerText = username.charAt(0);
-
-            // Hide overlay
             document.getElementById('loading-overlay').style.display = 'none';
         }
 
