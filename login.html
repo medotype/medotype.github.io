@@ -232,7 +232,7 @@ result = await _supabase.auth.signUp({
     } else {
         msgEl.innerText = isLogin ? 'Success! Loading...' : 'Account created! Welcome.';
         msgEl.className = 'success';
-        setTimeout(() => window.location.href = 'home.html', 1000);
+        setTimeout(() => window.location.href = 'account.html', 1000);
     }
 
     setTimeout(() => {
