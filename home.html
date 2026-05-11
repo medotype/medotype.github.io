@@ -301,17 +301,15 @@
             }, 1000);
         }
 
-        function finish() {
-            clearInterval(timerInterval);
-            const durationMinutes = (Date.now() - startTime) / 60000;
-            const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
-            const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
-            container.classList.add('hidden');
-            liveStat.innerText = '';
-            results.style.display = 'block';
-            document.getElementById('wpm-display').innerText = wpm;
-            document.getElementById('acc-display').innerText = `ACCURACY: ${acc}%`;
-        }
+function finish() {
+    clearInterval(timerInterval);
+    
+    const durationMinutes = (Date.now() - startTime) / 60000;
+    const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
+    const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
+
+    window.location.href = `results.html?wpm=${wpm}&acc=${acc}`;
+}
 
         loadWords();
     </script>
