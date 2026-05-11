@@ -214,15 +214,17 @@ async function handleAuth() {
 
     let result;
     if (isLogin) {
-        // Normal Login
         result = await _supabase.auth.signInWithPassword({ email, password });
     } else {
-        result = await _supabase.auth.signUp({ 
-            email, 
-            password, 
-            options: { data: { username: username } } 
-        });
-    }
+result = await _supabase.auth.signUp({ 
+    email, 
+    password, 
+    options: { 
+        data: { 
+            username: username
+        } 
+    } 
+});
 
     if (result.error) {
         msgEl.innerText = result.error.message;
