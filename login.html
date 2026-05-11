@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Account</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e0e0f;
+            --card-bg: #1e1e1f;
+            --text-faded: #646669;
+            --text-bright: #d1d0c5;
+            --accent: #3b82f6;
+            --error: #ef4444;
+            --font: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-bright);
+            font-family: var(--font);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        h2 { margin: 0 0 0.5rem 0; font-weight: 600; font-size: 1.5rem; }
+        .subtitle { color: var(--text-faded); font-size: 0.9rem; margin-bottom: 2rem; min-height: 2.5em; }
+
+        .input-group { 
+            text-align: left; 
+            margin-bottom: 1.2rem; 
+            max-height: 100px;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.4s ease, margin 0.4s ease;
+        }
+
+        .input-group.hidden { 
+            max-height: 0; 
+            opacity: 0; 
+            margin-bottom: 0; 
+            pointer-events: none;
+        }
+
+        label { 
+            display: block; 
+            font-size: 0.75rem; 
+            color: var(--text-faded); 
+            margin-bottom: 0.5rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.08em; 
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            color: white;
+            font-family: var(--font);
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus { border-color: var(--accent); background: #161617; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-family: var(--font);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .toggle-text {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-faded);
+            cursor: pointer;
+        }
+
+        #msg { margin-top: 1rem; font-size: 0.85rem; min-height: 1.2rem; }
+        .err { color: var(--error); }
+        .success { color: #10b981; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <h2 id="title">MeDoType</h2>
+        <p class="subtitle" id="subtitle">Enter your email to get started</p>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="you@example.com" onblur="checkUserType()">
+        </div>
+
+        <div id="username-group" class="input-group hidden">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="TypeMaster123">
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button class="btn" id="main-btn" onclick="handleAuth()">Continue</button>
+        
+        <p id="msg"></p>
+
+        <div class="toggle-text" onclick="manualToggle()" id="mode-hint">
+            Already have an account? Login
+        </div>
+    </div>
+
+    <script>
+        const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
+        const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        let isLogin = false; // Default to signup for new feel
+        let isCooldown = false;
+
+     
+        async function checkUserType() {
+            const email = document.getElementById('email').value;
+            if (!email.includes('@')) return;
+
+        }
+
+        function setMode(loginMode) {
+            isLogin = loginMode;
+            const userGroup = document.getElementById('username-group');
+            const title = document.getElementById('title');
+            const subtitle = document.getElementById('subtitle');
+            const btn = document.getElementById('main-btn');
+            const hint = document.getElementById('mode-hint');
+
+            if (isLogin) {
+                userGroup.classList.add('hidden');
+                title.innerText = "Welcome Back";
+                subtitle.innerText = "Login to view your stats";
+                btn.innerText = "Login";
+                hint.innerText = "Need an account? Sign Up";
+            } else {
+                userGroup.classList.remove('hidden');
+                title.innerText = "Create Profile";
+                subtitle.innerText = "Choose a username to start tracking scores";
+                btn.innerText = "Create Account";
+                hint.innerText = "Already have an account? Login";
+            }
+        }
+
+        function manualToggle() {
+            setMode(!isLogin);
+        }
+
+        setMode(false);
+
+async function handleAuth() {
+    if (isCooldown) return;
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const username = document.getElementById('username').value;
+    const msgEl = document.getElementById('msg');
+    const btnEl = document.getElementById('main-btn');
+
+    if (!email || !password || (!isLogin && !username)) {
+        msgEl.innerText = "Please fill in all fields.";
+        msgEl.className = 'err';
+        return;
+    }
+
+    if (!isLogin && username.length < 3) {
+        msgEl.innerText = "Username must be at least 3 characters.";
+        msgEl.className = 'err';
+        return;
+    }
+
+    isCooldown = true;
+    btnEl.disabled = true;
+    msgEl.innerText = "Processing...";
+    msgEl.className = "";
+
+    let result;
+    if (isLogin) {
+        // Normal Login
+        result = await _supabase.auth.signInWithPassword({ email, password });
+    } else {
+        result = await _supabase.auth.signUp({ 
+            email, 
+            password, 
+            options: { data: { username: username } } 
+        });
+    }
+
+    if (result.error) {
+        msgEl.innerText = result.error.message;
+        msgEl.className = 'err';
+    } else {
+        msgEl.innerText = isLogin ? 'Success! Loading...' : 'Account created! Welcome.';
+        msgEl.className = 'success';
+        setTimeout(() => window.location.href = 'home.html', 1000);
+    }
+
+    setTimeout(() => {
+        isCooldown = false;
+        btnEl.disabled = false;
+    }, 2000);
+}
+    </script>
+</body>
+</html>
