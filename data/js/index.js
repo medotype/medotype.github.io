@@ -1,0 +1,34 @@
+const iframe = document.getElementById('main-frame');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+
+function navigateFrame(url, element) {
+    iframe.classList.remove('loaded');
+    iframe.src = url;
+
+    navLinks.forEach(link => link.classList.remove('active'));
+
+    if (element.tagName === 'A') {
+        element.classList.add('active');
+    } else {
+        navLinks[0].classList.add('active');
+    }
+}
+
+
+function updateTitle() {
+    try {
+        const newTitle = iframe.contentDocument.title || iframe.title;
+        if (newTitle && newTitle !== "Loading...") {
+            document.title = newTitle;
+        }
+    } catch (e) {
+    }
+}
+
+iframe.onload = function() {
+    iframe.classList.add('loaded');
+    updateTitle();
+};
+
+setInterval(updateTitle, 1000);
