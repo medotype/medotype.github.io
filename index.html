@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading...</title>
+    <title>MeDoType</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -67,7 +67,7 @@
             display: flex;
             gap: 2rem;
             background: var(--card-bg);
-            padding: 8px 20px;
+            padding: 8px 24px;
             border-radius: 50px;
             border: 1px solid var(--border-color);
         }
@@ -151,13 +151,16 @@
                 <i class="fa-solid fa-house-chimney-user"></i>
             </a>
             <a onclick="navigateFrame('data.html', this)" title="Statistics">
-                <i class="fa-solid fa-chart-simple"></i>
+                <i class="fa-solid fa-clipboard-check"></i>
+            </a>
+            <a onclick="navigateFrame('leaderboard.html', this)" title="Leaderboard">
+                <i class="fa-solid fa-trophy"></i>
             </a>
             <a onclick="navigateFrame('settings.html', this)" title="Settings">
                 <i class="fa-solid fa-gear"></i>
             </a>
             <a onclick="navigateFrame('account.html', this)" title="Account">
-                <i class="fa-solid fa-user-astronaut"></i>
+                <i class="fa-solid fa-circle-user"></i>
             </a>
         </nav>
     </header>
@@ -180,20 +183,14 @@
         const iframe = document.getElementById('main-frame');
         const navLinks = document.querySelectorAll('.nav-links a');
 
-        // Function to change the iframe source and update UI
         function navigateFrame(url, element) {
-            // Start fading out the current content
             iframe.classList.remove('loaded');
-            
-            // Change the source
             iframe.src = url;
 
-            // Update Active Class in Nav
             navLinks.forEach(link => link.classList.remove('active'));
             if(element.tagName === 'A') {
                 element.classList.add('active');
             } else {
-                // If clicked logo, highlight home link
                 navLinks[0].classList.add('active');
             }
         }
@@ -204,9 +201,7 @@
                 if (newTitle && newTitle !== "Loading...") {
                     document.title = newTitle;
                 }
-            } catch (e) {
-                // Handle cross-origin if files are served differently
-            }
+            } catch (e) {}
         }
 
         iframe.onload = function() {
