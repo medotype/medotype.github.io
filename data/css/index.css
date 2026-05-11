@@ -1,0 +1,129 @@
+:root {
+    --bg: #0e0e0f; 
+    --header-bg: rgba(18, 18, 19, 0.8);
+    --card-bg: #1e1e1f;
+    --text-faded: #646669;
+    --text-bright: #d1d0c5;
+    --accent: #3b82f6;
+    --font: 'Inter', sans-serif;
+    --nav-height: 70px;
+    --border-color: rgba(255, 255, 255, 0.05);
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: var(--bg);
+    font-family: var(--font);
+    color: var(--text-bright);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    height: var(--nav-height);
+    background-color: var(--header-bg);
+    backdrop-filter: blur(10px); 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10%; 
+    border-bottom: 1px solid var(--border-color);
+    z-index: 100;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.brand i {
+    font-size: 1.5rem;
+    color: var(--accent);
+}
+
+.logo-text {
+    font-weight: 600;
+    font-size: 1.4rem;
+    letter-spacing: -0.03em;
+    color: var(--text-bright);
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    background: var(--card-bg);
+    padding: 8px 24px;
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+}
+
+.nav-links a {
+    color: var(--text-faded);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.content-wrapper {
+    flex: 1;
+    width: 100%;
+    background: var(--bg);
+    position: relative;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    opacity: 0; 
+    transition: opacity 0.3s ease;
+}
+
+iframe.loaded {
+    opacity: 1;
+}
+
+footer {
+    height: 50px;
+    background-color: var(--bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10%;
+    font-size: 0.8rem;
+    color: var(--text-faded);
+}
+
+.footer-left {
+    display: flex;
+    gap: 15px;
+}
+
+.footer-accent {
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.key-hint {
+    background: var(--card-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    border: 1px solid var(--border-color);
+}
