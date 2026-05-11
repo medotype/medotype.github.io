@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeDoType</title>
+    <title>Loading...</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -68,7 +68,7 @@
             gap: 2rem;
             background: var(--card-bg);
             padding: 8px 20px;
-            border-radius: 50px; /* Pill shape */
+            border-radius: 50px;
             border: 1px solid var(--border-color);
         }
 
@@ -80,6 +80,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
         }
 
         .nav-links a:hover, .nav-links a.active {
@@ -99,7 +100,7 @@
             height: 100%;
             border: none;
             opacity: 0; 
-            transition: opacity 0.5s ease;
+            transition: opacity 0.3s ease;
         }
 
         iframe.loaded {
@@ -123,11 +124,6 @@
             gap: 15px;
         }
 
-        .footer-left span:hover {
-            color: var(--text-bright);
-            cursor: help;
-        }
-
         .footer-accent {
             color: var(--accent);
             font-weight: 500;
@@ -145,22 +141,22 @@
 <body>
 
     <header>
-        <a href="index.html" class="brand">
+        <div class="brand" onclick="navigateFrame('home.html', this)">
             <i class="fa-solid fa-keyboard"></i>
             <span class="logo-text">MeDoType</span>
-        </a>
+        </div>
         
         <nav class="nav-links">
-            <a href="home.html" class="active" title="Home">
+            <a onclick="navigateFrame('home.html', this)" class="active" title="Home">
                 <i class="fa-solid fa-house-chimney-user"></i>
             </a>
-            <a href="data.html" title="Statistics">
+            <a onclick="navigateFrame('data.html', this)" title="Statistics">
                 <i class="fa-solid fa-chart-simple"></i>
             </a>
-            <a href="#" title="Settings">
+            <a onclick="navigateFrame('settings.html', this)" title="Settings">
                 <i class="fa-solid fa-gear"></i>
             </a>
-            <a href="#" title="Account">
+            <a onclick="navigateFrame('account.html', this)" title="Account">
                 <i class="fa-solid fa-user-astronaut"></i>
             </a>
         </nav>
@@ -182,6 +178,25 @@
 
     <script>
         const iframe = document.getElementById('main-frame');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        // Function to change the iframe source and update UI
+        function navigateFrame(url, element) {
+            // Start fading out the current content
+            iframe.classList.remove('loaded');
+            
+            // Change the source
+            iframe.src = url;
+
+            // Update Active Class in Nav
+            navLinks.forEach(link => link.classList.remove('active'));
+            if(element.tagName === 'A') {
+                element.classList.add('active');
+            } else {
+                // If clicked logo, highlight home link
+                navLinks[0].classList.add('active');
+            }
+        }
 
         function updateTitle() {
             try {
@@ -190,7 +205,7 @@
                     document.title = newTitle;
                 }
             } catch (e) {
-                console.log("Could not access iframe title due to CORS.");
+                // Handle cross-origin if files are served differently
             }
         }
 
@@ -199,7 +214,6 @@
             updateTitle();
         };
 
-        // Check for title changes every second (in case of SPA navigation inside iframe)
         setInterval(updateTitle, 1000);
     </script>
 </body>
