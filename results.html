@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #121213;
+            --card-bg: #1e1e1f;
+            --text-faded: #565656;
+            --text-bright: #ffffff;
+            --accent: #3b82f6;
+            --font: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-bright);
+            font-family: var(--font);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .results-card {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-label { 
+            color: var(--text-faded); 
+            text-transform: uppercase; 
+            font-size: 0.8rem; 
+            letter-spacing: 0.1em; 
+            margin: 0;
+        }
+
+        .stat-val { 
+            font-size: 5rem; 
+            font-weight: 600; 
+            color: var(--accent); 
+            margin: 0.5rem 0; 
+        }
+
+        .acc-val {
+            color: var(--text-bright);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        #retry-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-family: var(--font);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        #retry-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="results-card">
+        <p class="stat-label">Words Per Minute</p>
+        <h1 class="stat-val" id="wpm">0</h1>
+        <p class="acc-val" id="acc">Accuracy: 0%</p>
+        
+        <button id="retry-btn" onclick="location.href='home.html'">Next Test</button>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const wpm = params.get('wpm') || 0;
+        const acc = params.get('acc') || 0;
+
+        document.getElementById('wpm').innerText = wpm;
+        document.getElementById('acc').innerText = `ACCURACY: ${acc}%`;
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') location.href = 'home.html';
+        });
+    </script>
+</body>
+</html>
