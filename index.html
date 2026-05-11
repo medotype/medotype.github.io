@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeDoType | Home</title>
+    <title>MeDoType</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #121213;
+            --bg: #0e0e0f; 
+            --header-bg: rgba(18, 18, 19, 0.8);
             --card-bg: #1e1e1f;
-            --text-faded: #565656;
-            --text-bright: #ffffff;
+            --text-faded: #646669;
+            --text-bright: #d1d0c5;
             --accent: #3b82f6;
             --font: 'Inter', sans-serif;
-            --nav-height: 60px;
+            --nav-height: 70px;
+            --border-color: rgba(255, 255, 255, 0.05);
         }
 
         body, html {
@@ -29,92 +31,177 @@
             flex-direction: column;
         }
 
-        /* Header Styling */
         header {
             height: var(--nav-height);
-            background-color: var(--bg);
+            background-color: var(--header-bg);
+            backdrop-filter: blur(10px); 
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2rem;
-            border-bottom: 1px solid var(--card-bg);
-            z-index: 10;
+            padding: 0 10%; 
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
         }
 
-        .logo {
-            font-weight: 600;
-            font-size: 1.2rem;
-            letter-spacing: -0.02em;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .brand i {
+            font-size: 1.5rem;
             color: var(--accent);
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.4rem;
+            letter-spacing: -0.03em;
+            color: var(--text-bright);
         }
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 2rem;
+            background: var(--card-bg);
+            padding: 8px 20px;
+            border-radius: 50px; /* Pill shape */
+            border: 1px solid var(--border-color);
         }
 
         .nav-links a {
             color: var(--text-faded);
             text-decoration: none;
-            font-size: 1.1rem;
-            transition: color 0.2s;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: var(--text-bright);
+            color: var(--accent);
+            transform: translateY(-1px);
         }
 
-        /* Iframe Container */
         .content-wrapper {
             flex: 1;
             width: 100%;
-            border: none;
+            background: var(--bg);
+            position: relative;
         }
 
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            opacity: 0; /* Hidden until loaded for smooth transition */
+            transition: opacity 0.5s ease;
         }
 
-        /* Footer Styling */
+        iframe.loaded {
+            opacity: 1;
+        }
+
         footer {
-            height: 40px;
+            height: 50px;
             background-color: var(--bg);
-            border-top: 1px solid var(--card-bg);
+            border-top: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
+            justify-content: space-between;
+            padding: 0 10%;
+            font-size: 0.8rem;
             color: var(--text-faded);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        }
+
+        .footer-left {
+            display: flex;
+            gap: 15px;
+        }
+
+        .footer-left span:hover {
+            color: var(--text-bright);
+            cursor: help;
         }
 
         .footer-accent {
             color: var(--accent);
-            margin: 0 4px;
+            font-weight: 500;
+        }
+
+        .key-hint {
+            background: var(--card-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            border: 1px solid var(--border-color);
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">MeDoType</div>
+        <a href="/" class="brand">
+            <i class="fa-solid fa-keyboard"></i>
+            <span class="logo-text">MeDoType</span>
+        </a>
+        
         <nav class="nav-links">
-            <a href="#" class="active" title="Home"><i class="fa-solid fa-keyboard"></i></a>
-            <a href="#" title="Statistics"><i class="fa-solid fa-clipboard-list"></i></a>
-            <a href="#" title="Account"><i class="fa-solid fa-user"></i></a>
+            <a href="#" class="active" title="Home">
+                <i class="fa-solid fa-house-chimney-user"></i>
+            </a>
+            <a href="#" title="Statistics">
+                <i class="fa-solid fa-chart-simple"></i>
+            </a>
+            <a href="#" title="Settings">
+                <i class="fa-solid fa-gear"></i>
+            </a>
+            <a href="#" title="Account">
+                <i class="fa-solid fa-user-astronaut"></i>
+            </a>
         </nav>
     </header>
 
     <main class="content-wrapper">
-        <iframe src="home.html" title="loadedpage"></iframe>
+        <iframe id="main-frame" src="home.html" title="Loading..."></iframe>
     </main>
 
     <footer>
-        &copy; 2026 <span class="footer-accent">MeDoType</span> | Minimalist Typing Tool
+        <div class="footer-left">
+            <span>&copy; 2026 <span class="footer-accent">MeDoType</span></span>
+            <span><span class="key-hint">esc</span> - reset</span>
+        </div>
+        <div class="footer-right">
+            v0.1
+        </div>
     </footer>
 
+    <script>
+        const iframe = document.getElementById('main-frame');
+
+        function updateTitle() {
+            try {
+                const newTitle = iframe.contentDocument.title || iframe.title;
+                if (newTitle && newTitle !== "Loading...") {
+                    document.title = newTitle;
+                }
+            } catch (e) {
+                // Handle cross-origin if home.html is on a different domain
+                console.log("Could not access iframe title due to CORS.");
+            }
+        }
+
+        iframe.onload = function() {
+            iframe.classList.add('loaded');
+            updateTitle();
+        };
+
+        // Check for title changes every second (in case of SPA navigation inside iframe)
+        setInterval(updateTitle, 1000);
+    </script>
 </body>
 </html>
