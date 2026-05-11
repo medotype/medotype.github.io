@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #121213;
+            --card-bg: #1e1e1f;
+            --text-faded: #565656;
+            --text-bright: #ffffff;
+            --accent: #3b82f6;
+            --error: #ef4444;
+            --font: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-bright);
+            font-family: var(--font);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 850px;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            text-align: left;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-faded);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: left;
+        }
+
+        .stat-label {
+            color: var(--text-faded);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 24px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 100%;
+            border-bottom: 2px solid var(--text-faded);
+        }
+
+        .bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 4px 4px 0 0;
+            opacity: 0.6;
+        }
+
+        .bar:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--text-faded);
+            color: var(--text-faded);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <header>
+            <h1>Personal Analytics</h1>
+            <p class="subtitle">Tracking your typing progression over time</p>
+        </header>
+
+        <div class="grid">
+            <div class="stat-card">
+                <p class="stat-label">Average WPM</p>
+                <div class="stat-value">N/A</div>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Peak WPM</p>
+                <div class="stat-value">N/A</div>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Avg. Accuracy</p>
+                <div class="stat-value">N/A</div>
+            </div>
+            <div class="stat-card">
+                <p class="stat-label">Tests Taken</p>
+                <div class="stat-value">N/A</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <p class="stat-label" style="position: absolute; top: 20px; left: 20px;">WPM History (Last 10 Tests)</p>
+            <div class="chart-placeholder">
+                <div class="bar" style="height: 60%;"></div>
+                <div class="bar" style="height: 65%;"></div>
+                <div class="bar" style="height: 58%;"></div>
+                <div class="bar" style="height: 72%;"></div>
+                <div class="bar" style="height: 80%;"></div>
+                <div class="bar" style="height: 75%;"></div>
+                <div class="bar" style="height: 85%;"></div>
+                <div class="bar" style="height: 90%;"></div>
+                <div class="bar" style="height: 88%;"></div>
+                <div class="bar" style="height: 95%;"></div>
+            </div>
+        </div>
+
+        <footer>
+            <a href="home.html" class="back-btn">Return to Home</a>
+        </footer>
+    </div>
+
+</body>
+</html>
