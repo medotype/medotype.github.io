@@ -98,7 +98,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            opacity: 0; /* Hidden until loaded for smooth transition */
+            opacity: 0; 
             transition: opacity 0.5s ease;
         }
 
@@ -145,16 +145,16 @@
 <body>
 
     <header>
-        <a href="/" class="brand">
+        <a href="index.html" class="brand">
             <i class="fa-solid fa-keyboard"></i>
             <span class="logo-text">MeDoType</span>
         </a>
         
         <nav class="nav-links">
-            <a href="#" class="active" title="Home">
+            <a href="home.html" class="active" title="Home">
                 <i class="fa-solid fa-house-chimney-user"></i>
             </a>
-            <a href="#" title="Statistics">
+            <a href="data.html" title="Statistics">
                 <i class="fa-solid fa-chart-simple"></i>
             </a>
             <a href="#" title="Settings">
@@ -190,7 +190,6 @@
                     document.title = newTitle;
                 }
             } catch (e) {
-                // Handle cross-origin if home.html is on a different domain
                 console.log("Could not access iframe title due to CORS.");
             }
         }
