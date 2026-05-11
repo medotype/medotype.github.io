@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Account</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e0e0f;
+            --card-bg: #1e1e1f;
+            --text-faded: #646669;
+            --text-bright: #d1d0c5;
+            --accent: #3b82f6;
+            --error: #ef4444;
+            --font: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-bright);
+            font-family: var(--font);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .avatar-circle {
+            width: 72px;
+            height: 72px;
+            background: var(--bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        h2 { margin: 0 0 0.2rem 0; font-weight: 600; font-size: 1.5rem; }
+        .subtitle { color: var(--text-faded); font-size: 0.9rem; margin-bottom: 2rem; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            font-family: var(--font);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            background: transparent;
+            color: var(--error);
+        }
+
+        .btn:hover { 
+            background: rgba(239, 68, 68, 0.05); 
+            border-color: var(--error);
+            transform: translateY(-1px); 
+        }
+
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: var(--text-faded);
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">Loading...</div>
+
+    <div class="auth-card">
+        <div class="avatar-circle" id="avatar-init">?</div>
+        
+        <h2 id="display-username">Typist</h2>
+        <p class="subtitle" id="display-email">user@example.com</p>
+
+        <button class="btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
+        const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        async function initProfile() {
+            const { data: { session }, error } = await _supabase.auth.getSession();
+
+            // Redirects to login.html if not signed in
+            if (!session || error) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = session.user;
+            const username = user.user_metadata.username || "Typist";
+
+            document.getElementById('display-username').innerText = username;
+            document.getElementById('display-email').innerText = user.email;
+            document.getElementById('avatar-init').innerText = username.charAt(0);
+
+            // Hide overlay
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        async function logout() {
+            await _supabase.auth.signOut();
+            window.location.href = 'login.html';
+        }
+
+        initProfile();
+    </script>
+</body>
+</html>
