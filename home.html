@@ -8,13 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0e0e0f;
+            --bg: #121213;
             --card-bg: #1e1e1f;
-            --text-faded: #646669;
-            --text-bright: #d1d0c5;
+            --text-faded: #565656;
+            --text-bright: #ffffff;
             --accent: #3b82f6;
             --error: #ef4444;
             --font: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s ease;
         }
 
         body {
@@ -29,7 +34,13 @@
             overflow: hidden;
         }
 
-        #app { width: 100%; max-width: 850px; text-align: center; padding: 2rem; }
+        #app {
+            width: 100%;
+            max-width: 850px;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
 
         #nav {
             margin-bottom: 3rem;
@@ -50,29 +61,100 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 0.85rem;
-            transition: 0.2s;
         }
 
-        .mode-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .mode-btn.active {
+            background: var(--bg);
+            color: var(--accent);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
 
-        #live-stat { font-size: 1.2rem; color: var(--text-faded); margin-bottom: 1.5rem; height: 1.5rem; }
+        #live-stat {
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: var(--text-faded);
+            margin-bottom: 1.5rem;
+            height: 1.5rem;
+        }
 
-        #typing-viewport { height: 90px; overflow: hidden; position: relative; }
+        #typing-viewport {
+            height: 90px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 2rem;
+        }
 
         #word-container {
             display: flex;
             flex-wrap: wrap;
             gap: 14px;
             justify-content: center;
+            align-items: center;
             position: relative;
             top: 0;
-            transition: top 0.2s ease;
+            transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .word { font-size: 2rem; color: var(--text-faded); white-space: nowrap; }
-        .word.active { color: var(--text-bright); }
+        .word {
+            font-size: 2rem;
+            font-weight: 400;
+            color: var(--text-faded);
+            letter-spacing: -0.02em;
+            position: relative;
+        }
+
+        .word.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
         .letter.correct { color: var(--text-bright); }
         .letter.incorrect { color: var(--error); border-bottom: 2px solid var(--error); }
+
+        #results-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            display: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        .stat-val { font-size: 4rem; font-weight: 600; color: var(--accent); margin: 0; }
+        .stat-label { color: var(--text-faded); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em; }
+
+        #restart-btn {
+            margin-top: 2rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-family: var(--font);
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        #restart-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .hidden { visibility: hidden; opacity: 0; }
     </style>
 </head>
 <body>
@@ -88,15 +170,23 @@
         <div id="typing-viewport">
             <div id="word-container"></div>
         </div>
+
+        <div id="results-screen">
+            <p class="stat-label">Words Per Minute</p>
+            <h1 class="stat-val" id="wpm-display">0</h1>
+            <p class="stat-label" id="acc-display" style="margin-top: 10px;">Acc: 0%</p>
+            <button id="restart-btn" onclick="resetGame()">Restart</button>
+        </div>
     </div>
 
     <script>
+        // SUPABASE INIT ADDED HERE
         const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
         const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
         let wordsList = [];
-        let gameMode = 'time_15';
+        let gameMode = 'time_15'; // DEFAULT MODE UPDATED
         let isStarted = false;
         let activeWordIdx = 0;
         let activeCharIdx = 0;
@@ -107,18 +197,22 @@
 
         const container = document.getElementById('word-container');
         const liveStat = document.getElementById('live-stat');
+        const results = document.getElementById('results-screen');
 
         async function loadWords() {
             try {
                 const response = await fetch('data/json/wordlistcommon.json');
                 wordsList = await response.json();
                 resetGame();
-            } catch (e) { liveStat.innerText = "Error loading wordlist"; }
+            } catch (e) {
+                liveStat.innerText = "Error loading /data/wordlist.json";
+            }
         }
 
         function changeMode(mode) {
             gameMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => {
+                // BUTTON HIGHLIGHT LOGIC UPDATED FOR NEW MODES
                 const isTime = mode === 'time_15' && b.innerText.includes('15s');
                 const isWords = mode === 'words_30' && b.innerText.includes('30 Words');
                 b.classList.toggle('active', isTime || isWords);
@@ -128,13 +222,25 @@
 
         function resetGame() {
             clearInterval(timerInterval);
-            isStarted = false; activeWordIdx = 0; activeCharIdx = 0;
-            correctChars = 0; totalKeystrokes = 0; startTime = null;
+            isStarted = false;
+            activeWordIdx = 0;
+            activeCharIdx = 0;
+            correctChars = 0;
+            totalKeystrokes = 0;
+            startTime = null;
             container.style.top = "0px";
+            results.style.display = 'none';
+            container.classList.remove('hidden');
+            
+            // LIVE STAT UPDATED FOR NEW MODES
             liveStat.innerText = gameMode === 'time_15' ? '15' : '0 / 30';
 
-            const count = gameMode === 'time_15' ? 100 : 30;
+            if (wordsList.length === 0) return;
+
+            // WORD COUNT UPDATED FOR NEW MODES
+            const count = gameMode === 'time_15' ? 80 : 30;
             const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
+            
             container.innerHTML = shuffled.map((w, i) => `
                 <span class="word ${i === 0 ? 'active' : ''}">
                     ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
@@ -143,11 +249,12 @@
         }
 
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') return resetGame();
+            if (results.style.display === 'block') return;
+            
             if (!isStarted && e.key.length === 1) {
                 isStarted = true;
                 startTime = Date.now();
-                if (gameMode === 'time_15') startTimer();
+                if (gameMode === 'time_15') startTimer(); // UPDATED MODE
             }
 
             const words = container.querySelectorAll('.word');
@@ -167,10 +274,11 @@
                     activeWordIdx++;
                     activeCharIdx = 0;
                     if (activeWordIdx < words.length) {
-                        words[activeWordIdx].classList.add('active');
-                        if (words[activeWordIdx].offsetTop > 40) container.style.top = `-${words[activeWordIdx].offsetTop}px`;
+                        const nextWord = words[activeWordIdx];
+                        nextWord.classList.add('active');
+                        handleScroll(nextWord);
                     }
-                    if (gameMode === 'words_30') {
+                    if (gameMode === 'words_30') { // UPDATED MODE
                         liveStat.innerText = `${activeWordIdx} / 30`;
                         if (activeWordIdx === 30) finish();
                     }
@@ -189,6 +297,13 @@
             }
         });
 
+        function handleScroll(activeWord) {
+            const offset = activeWord.offsetTop;
+            if (offset > 40) {
+                container.style.top = `-${offset}px`;
+            }
+        }
+
         function startTimer() {
             let left = 15;
             timerInterval = setInterval(() => {
@@ -200,20 +315,28 @@
 
         async function finish() {
             clearInterval(timerInterval);
-            const duration = (Date.now() - startTime) / 60000;
-            const wpm = Math.round((correctChars / 5) / duration) || 0;
+            
+            const durationMinutes = (Date.now() - startTime) / 60000;
+            const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
             const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
 
             let saved = false;
             const { data: { session } } = await _supabase.auth.getSession();
 
             if (session) {
-                const { error } = await _supabase.from('scores').insert([
-                    { user_id: session.user.id, wpm: wpm, accuracy: acc, mode: gameMode }
-                ]);
+                const { error } = await _supabase
+                    .from('scores')
+                    .insert([{ 
+                        user_id: session.user.id, 
+                        wpm: wpm, 
+                        accuracy: acc, 
+                        mode: gameMode 
+                    }]);
+                
                 if (!error) saved = true;
             }
 
+            // Passes the new data to the results screen
             window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${gameMode}&saved=${saved}`;
         }
 
