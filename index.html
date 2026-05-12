@@ -96,9 +96,9 @@
     function handleGlobalSearch() {
         const query = document.getElementById('global-search').value.trim();
         if (query) {
-            const url = `pages/view-profile.html?username=${encodeURIComponent(query)}`;
-            navigateFrame(url, { tagName: 'SEARCH' }); // Pass dummy object to clear active nav states
-            document.getElementById('global-search').value = ''; // Clear search bar
+            const url = `pages/loadprofile.html?username=${encodeURIComponent(query)}`;
+            navigateFrame(url, { tagName: 'SEARCH' }); 
+            document.getElementById('global-search').value = ''; 
         }
     }
 </script>
