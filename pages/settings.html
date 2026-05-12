@@ -4,102 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MeDoType | Settings</title>
-    <link rel="stylesheet" href="../data/css/root.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { padding: 2rem; display: flex; flex-direction: column; align-items: center; }
-        .settings-container { width: 100%; max-width: 600px; }
-        
-        .section-title { 
-            color: var(--text-faded); 
-            text-transform: uppercase; 
-            font-size: 0.8rem; 
-            letter-spacing: 0.1em;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-
-        .theme-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            text-align: center;
-            transition: 0.2s;
-        }
-
-        .theme-card:hover { transform: translateY(-3px); }
-        .theme-card.active { border-color: var(--accent); }
-
-        .preview-dots {
+        body {
+            background-color: #121213; 
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
             display: flex;
-            gap: 5px;
+            align-items: center;
             justify-content: center;
-            margin-top: 10px;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .container {
+            text-align: center;
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        .gear-icon {
+            font-size: 4rem;
+            color: #3b82f6;
+            margin-bottom: 1.5rem;
+            animation: spin 5s linear infinite;;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .wip-badge {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 6px 14px;
+            background: #1e1e1f;
+            color: #3b82f6;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        p {
+            color: #565656;
+            line-height: 1.6;
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .theme-preview {
+            margin-top: 2rem;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            opacity: 0.5; /* Faded because it's WIP */
+        }
+
+        .dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #1e1e1f;
+        }
     </style>
 </head>
 <body>
 
-    <div class="settings-container">
-        <h1 style="margin-bottom: 2rem;">Settings</h1>
+    <div class="container">
+        <i class="fa-solid fa-gear gear-icon"></i>
+        <h1>Settings</h1>
+        <div class="wip-badge">Work in Progress</div>
+        
+        <p>
+            Custom themes are coming soon to MeDoType, along with keyboard sounds!
+        </p>
 
-        <span class="section-title">Theme Select</span>
-        <div class="theme-grid">
-            <div class="theme-card" onclick="setTheme('default')">
-                <span style="color: #ffffff">Default Dark</span>
-                <div class="preview-dots">
-                    <div class="dot" style="background: #121213"></div>
-                    <div class="dot" style="background: #3b82f6"></div>
-                </div>
-            </div>
-
-            <div class="theme-card" onclick="setTheme('theme-carbon')">
-                <span style="color: #f5e076">Carbon</span>
-                <div class="preview-dots">
-                    <div class="dot" style="background: #2b2b2b"></div>
-                    <div class="dot" style="background: #f5e076"></div>
-                </div>
-            </div>
-
-            <div class="theme-card" onclick="setTheme('theme-sakura')">
-                <span style="color: #e11d48">Sakura</span>
-                <div class="preview-dots">
-                    <div class="dot" style="background: #fff1f2"></div>
-                    <div class="dot" style="background: #e11d48"></div>
-                </div>
-            </div>
+        <div class="theme-preview">
+            <div class="dot" style="background: #3b82f6;"></div>
+            <div class="dot" style="background: #f5e076;"></div>
+            <div class="dot" style="background: #e11d48;"></div>
+            <div class="dot" style="background: #10b981;"></div>
         </div>
     </div>
 
     <script>
-        function setTheme(themeName) {
-            document.body.className = '';
-            if (themeName !== 'default') {
-                document.body.classList.add(themeName);
+
+        (function() {
+            const savedTheme = localStorage.getItem('user-theme');
+            if (savedTheme === 'theme-carbon') {
+                document.querySelector('.gear-icon').style.color = '#f5e076';
+            } else if (savedTheme === 'theme-sakura') {
+                document.querySelector('.gear-icon').style.color = '#e11d48';
             }
-
-            localStorage.setItem('user-theme', themeName);
-
-            document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-
-            if (window.parent && window.parent.applyGlobalTheme) {
-                window.parent.applyGlobalTheme(themeName);
-            }
-        }
-
-        // Initialize on load
-        const savedTheme = localStorage.getItem('user-theme') || 'default';
-        setTheme(savedTheme);
+        })();
     </script>
 </body>
 </html>
