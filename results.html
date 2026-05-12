@@ -46,40 +46,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .stat-label { 
-            color: var(--text-faded); 
-            text-transform: uppercase; 
-            font-size: 0.75rem; 
-            letter-spacing: 0.15em; 
-            margin: 0;
-        }
+        .stat-label { color: var(--text-faded); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.15em; margin: 0; }
+        .stat-val { font-size: 5.5rem; font-weight: 600; color: var(--accent); margin: 0.2rem 0; text-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
+        .acc-val { color: var(--text-bright); font-size: 1.2rem; margin-bottom: 2rem; font-weight: 400; }
 
-        .stat-val { 
-            font-size: 5.5rem; 
-            font-weight: 600; 
-            color: var(--accent); 
-            margin: 0.2rem 0;
-            text-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
-        }
-
-        .acc-val {
-            color: var(--text-bright);
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            font-weight: 400;
-        }
-
-        .status-msg {
-            font-size: 0.8rem;
-            margin-bottom: 1.5rem;
-            padding: 8px;
-            border-radius: 8px;
-            display: inline-block;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Dynamic Classes */
+        .status-msg { font-size: 0.8rem; margin-bottom: 1.5rem; padding: 8px; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .msg-saved { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .msg-guest { background: rgba(100, 102, 105, 0.1); color: var(--text-faded); }
 
@@ -94,25 +65,12 @@
             font-size: 1rem;
             cursor: pointer;
             width: 100%;
-            transition: all 0.2s;
+            transition: 0.2s;
         }
 
-        .btn:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--text-faded);
-            color: var(--text-faded);
-            margin-top: 12px;
-        }
-
-        .btn-outline:hover {
-            border-color: var(--text-bright);
-            color: var(--text-bright);
-        }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 1px solid var(--text-faded); color: var(--text-faded); margin-top: 12px; }
+        .btn-outline:hover { border-color: var(--text-bright); color: var(--text-bright); }
     </style>
 </head>
 <body>
@@ -122,12 +80,8 @@
         <h1 class="stat-val" id="wpm">0</h1>
         <p class="acc-val" id="acc">ACC: 0%</p>
 
-        <div id="status-container" class="status-msg">
-            Checking status...
-        </div>
-
-        <div id="action-area">
-            </div>
+        <div id="status-container" class="status-msg">Checking status...</div>
+        <div id="action-area"></div>
     </div>
 
     <script>
@@ -136,33 +90,25 @@
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
         async function initResults() {
-            // Get stats from URL
             const params = new URLSearchParams(window.location.search);
             const wpm = params.get('wpm') || 0;
             const acc = params.get('acc') || 0;
+            const mode = (params.get('mode') || 'time_15').replace('_', ' ');
+            const isSaved = params.get('saved') === 'true';
 
             document.getElementById('wpm').innerText = wpm;
             document.getElementById('acc').innerText = `ACCURACY: ${acc}%`;
 
-            // Check Auth
-            const { data: { session } } = await _supabase.auth.getSession();
-            
             const statusBox = document.getElementById('status-container');
             const actionArea = document.getElementById('action-area');
 
-            if (session) {
-                // USER IS LOGGED IN
-                statusBox.innerText = "✓ Score saved to your profile";
+            if (isSaved) {
+                statusBox.innerText = `✓ Score saved to your ${mode} profile`;
                 statusBox.className = "status-msg msg-saved";
-                
-                actionArea.innerHTML = `
-                    <button class="btn" onclick="location.href='home.html'">Next Test</button>
-                `;
+                actionArea.innerHTML = `<button class="btn" onclick="location.href='home.html'">Next Test</button>`;
             } else {
-                // USER IS GUEST
                 statusBox.innerText = "⚠ Score not saved. Sign up to track progress.";
                 statusBox.className = "status-msg msg-guest";
-
                 actionArea.innerHTML = `
                     <button class="btn" onclick="location.href='account.html'">Login to Save</button>
                     <button class="btn btn-outline" onclick="location.href='home.html'">Skip & Retry</button>
@@ -171,11 +117,7 @@
         }
 
         initResults();
-
-        // Global Enter key support
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') location.href = 'home.html';
-        });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Enter') location.href = 'home.html'; });
     </script>
 </body>
 </html>
