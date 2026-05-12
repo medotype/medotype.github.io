@@ -10,6 +10,39 @@
     <link rel="stylesheet" href="data/css/index.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico?v=1">
 </head>
+    
+    <style>
+    .search-container {
+        flex: 0 1 300px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        padding: 0 15px;
+        margin: 0 20px;
+        transition: 0.2s;
+    }
+    .search-container:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+    .search-container i {
+        color: var(--text-faded);
+        font-size: 0.9rem;
+    }
+    .search-container input {
+        background: transparent;
+        border: none;
+        color: var(--text-bright);
+        padding: 10px;
+        width: 100%;
+        outline: none;
+        font-family: var(--font);
+        font-size: 0.9rem;
+    }
+</style>
+    
 <body>
 
     <header>
@@ -17,6 +50,12 @@
             <i class="fa-solid fa-keyboard"></i>
             <span class="logo-text">MeDoType</span>
         </div>
+
+        <div class="search-container">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="global-search" placeholder="search typists..." 
+               onkeypress="if(event.key === 'Enter') handleGlobalSearch()">
+    </div>
         
         <nav class="nav-links">
             <a onclick="navigateFrame('pages/home.html', this)" class="active" title="Home">
@@ -52,5 +91,17 @@
     </footer>
 
     <script src="data/js/index.js"></script>
+
+    <script>
+    function handleGlobalSearch() {
+        const query = document.getElementById('global-search').value.trim();
+        if (query) {
+            const url = `pages/view-profile.html?username=${encodeURIComponent(query)}`;
+            navigateFrame(url, { tagName: 'SEARCH' }); // Pass dummy object to clear active nav states
+            document.getElementById('global-search').value = ''; // Clear search bar
+        }
+    }
+</script>
+    
 </body>
 </html>
