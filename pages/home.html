@@ -166,13 +166,12 @@
     </div>
 
     <script>
-        // SUPABASE INIT ADDED HERE
         const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
         const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
         let wordsList = [];
-        let gameMode = 'time_15'; // DEFAULT MODE UPDATED
+        let gameMode = 'time_15';
         let isStarted = false;
         let activeWordIdx = 0;
         let activeCharIdx = 0;
@@ -187,11 +186,11 @@
 
         async function loadWords() {
             try {
-                const response = await fetch('data/json/wordlistcommon.json');
+                const response = await fetch('../data/json/wordlistcommon.json');
                 wordsList = await response.json();
                 resetGame();
             } catch (e) {
-                liveStat.innerText = "Error loading /data/wordlist.json";
+                liveStat.innerText = "Error loading wordlist";
             }
         }
 
@@ -218,12 +217,10 @@
             results.style.display = 'none';
             container.classList.remove('hidden');
             
-            // LIVE STAT UPDATED FOR NEW MODES
             liveStat.innerText = gameMode === 'time_15' ? '15' : '0 / 30';
 
             if (wordsList.length === 0) return;
 
-            // WORD COUNT UPDATED FOR NEW MODES
             const count = gameMode === 'time_15' ? 80 : 30;
             const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
             
@@ -322,7 +319,6 @@
                 if (!error) saved = true;
             }
 
-            // Passes the new data to the results screen
             window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${gameMode}&saved=${saved}`;
         }
 
