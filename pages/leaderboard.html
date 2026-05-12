@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Leaderboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="../data/css/root.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-bright); 
+            font-family: var(--font); 
+            margin: 0; 
+            padding: 40px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .container { width: 100%; max-width: 800px; }
+
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 2.5rem; 
+        }
+
+        .header h1 { 
+            margin: 0; 
+            font-size: 1.6rem; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
+            letter-spacing: -0.02em;
+        }
+
+        .header h1 i {
+            color: var(--accent);
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+        }
+
+        /* Nav Tabs */
+        .mode-nav { 
+            background: var(--card-bg); 
+            padding: 5px; 
+            border-radius: 12px; 
+            display: flex; 
+            gap: 5px; 
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .mode-btn { 
+            background: transparent; 
+            border: none; 
+            color: var(--text-faded); 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 0.85rem;
+            transition: 0.2s ease;
+        }
+
+        .mode-btn:hover { color: var(--text-bright); }
+        .mode-btn.active { 
+            background: var(--bg); 
+            color: var(--accent); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Table Card */
+        .board-card { 
+            background: var(--card-bg); 
+            border-radius: 20px; 
+            padding: 10px; 
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th { 
+            text-align: left; 
+            padding: 20px; 
+            color: var(--text-faded); 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.1em;
+            border-bottom: 2px solid var(--bg);
+        }
+
+        td { 
+            padding: 18px 20px; 
+            border-bottom: 1px solid rgba(255,255,255,0.02); 
+            font-size: 1rem;
+        }
+
+        .rank-col { width: 60px; color: var(--text-faded); font-weight: 600; }
+        .user-col { font-weight: 500; }
+        .wpm-col { color: var(--accent); font-weight: 700; text-align: right; }
+        .acc-col { color: var(--text-faded); text-align: right; width: 100px; font-size: 0.9rem; }
+
+        /* Top Racer Highlight */
+        tr:first-child td.user-col { color: var(--success); }
+        
+        #status { text-align: center; padding: 60px; color: var(--text-faded); font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fa-solid fa-trophy"></i> Leaderboard</h1>
+        <div class="mode-nav">
+            <button class="mode-btn active" onclick="loadLeaderboard('time_15', this)">15s</button>
+            <button class="mode-btn" onclick="loadLeaderboard('words_30', this)">30 words</button>
+        </div>
+    </div>
+
+    <div class="board-card">
+        <table id="lb-table" style="display:none">
+            <thead>
+                <tr>
+                    <th class="rank-col">#</th>
+                    <th>user</th>
+                    <th style="text-align:right">wpm</th>
+                    <th style="text-align:right">accuracy</th>
+                </tr>
+            </thead>
+            <tbody id="lb-body"></tbody>
+        </table>
+        <div id="status">fetching...</div>
+    </div>
+</div>
+
+<script>
+    const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
+    const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    async function loadLeaderboard(mode, btn) {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const body = document.getElementById('lb-body');
+        const status = document.getElementById('status');
+        const table = document.getElementById('lb-table');
+
+        body.innerHTML = '';
+        table.style.display = 'none';
+        status.style.display = 'block';
+        status.innerText = 'fetching...';
+
+        try {
+            // Fetch scores first to avoid relationship cache errors
+            const { data: scores, error: sErr } = await _supabase
+                .from('scores')
+                .select('wpm, accuracy, user_id')
+                .eq('mode', mode)
+                .order('wpm', { ascending: false })
+                .order('accuracy', { ascending: false })
+                .limit(15);
+
+            if (sErr) throw sErr;
+            if (!scores || scores.length === 0) {
+                status.innerText = 'no scores found yet';
+                return;
+            }
+
+            // Fetch names for these specific users
+            const userIds = [...new Set(scores.map(s => s.user_id))];
+            const { data: profiles, error: pErr } = await _supabase
+                .from('profiles')
+                .select('id, username')
+                .in('id', userIds);
+
+            if (pErr) throw pErr;
+
+            const profileMap = Object.fromEntries(profiles.map(p => [p.id, p.username]));
+
+            status.style.display = 'none';
+            table.style.display = 'table';
+
+            scores.forEach((s, i) => {
+                const username = profileMap[s.user_id] || "Guest";
+                body.innerHTML += `
+                    <tr>
+                        <td class="rank-col">${i + 1}</td>
+                        <td class="user-col">${username}</td>
+                        <td class="wpm-col">${s.wpm}</td>
+                        <td class="acc-col">${s.accuracy}%</td>
+                    </tr>`;
+            });
+
+        } catch (err) {
+            console.error("Leaderboard Load Failed:", err);
+            status.innerText = "Error loading standings.";
+        }
+    }
+
+    window.onload = () => loadLeaderboard('time_15', document.querySelector('.mode-btn'));
+</script>
+</body>
+</html>
