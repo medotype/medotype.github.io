@@ -35,120 +35,51 @@
         #restart-btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .hidden { visibility: hidden; opacity: 0; }
 
-#nav-container {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto 4rem auto;
-}
-
-.menu-bar {
+.mode-settings-container {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 15px;
-    background: var(--card-bg);
-    padding: 8px 20px;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    margin-bottom: 3rem;
+    animation: fadeIn 0.5s ease;
 }
 
-.menu-label {
-    color: var(--text-faded);
-    font-size: 0.8rem;
+.mode-group {
+    display: flex;
+    background: var(--card-bg);
+    padding: 4px;
+    border-radius: 10px;
+    gap: 2px;
+}
+
+.mode-item {
+    padding: 8px 16px;
+    font-size: 0.85rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    color: var(--text-faded);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.custom-select {
-    position: relative;
-    cursor: pointer;
-    min-width: 160px;
-}
-
-.custom-select-trigger {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--accent); /* Highlighting the active choice */
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.custom-select-trigger:hover {
+.mode-item:hover {
     color: var(--text-bright);
 }
 
-.custom-options {
-    position: absolute;
-    top: calc(100% + 15px); /* Space below the bar */
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    width: 200px;
-    padding: 8px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
-}
-
-/* Arrow indicator for the menu */
-.custom-options::before {
-    content: '';
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    width: 12px;
-    height: 12px;
-    background: var(--card-bg);
-    border-left: 1px solid var(--border-color);
-    border-top: 1px solid var(--border-color);
-}
-
-.custom-select.open .custom-options {
-    opacity: 1;
-    visibility: visible;
-    top: calc(100% + 10px);
-}
-
-.custom-option {
-    padding: 10px 15px;
-    border-radius: 8px;
-    color: var(--text-faded);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: 0.2s;
-}
-
-.custom-option:hover {
-    background: rgba(255,255,255,0.05);
+.mode-item.active {
     color: var(--accent);
+    background: rgba(255, 255, 255, 0.03);
 }
 
-.custom-option.selected {
-    background: rgba(59, 130, 246, 0.1);
-    color: var(--accent);
+/* Specific Blitz Styling */
+.mode-item.blitz-active {
+    color: #ff4500;
+    text-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
 }
 
-.arrow {
-    font-size: 0.7rem;
-    opacity: 0.5;
-    transition: transform 0.3s;
-}
-
-.custom-select.open .arrow {
-    transform: rotate(180deg);
+.mode-item i {
+    font-size: 0.8rem;
 }
         
     </style>
@@ -156,20 +87,9 @@
 <body>
 
     <div id="app">
-<div id="nav-container">
-    <div class="menu-bar">
-        <div class="menu-label"><i class="fa-solid fa-sliders"></i> Mode</div>
-        
-        <div class="custom-select" id="custom-select" onclick="toggleDropdown()">
-            <div class="custom-select-trigger">
-                <i class="fa-solid fa-clock-rotate-left" id="selected-icon"></i>
-                <span id="selected-label">Loading...</span>
-                <i class="fa-solid fa-chevron-down arrow"></i>
-            </div>
-            <div class="custom-options" id="custom-options">
-                </div>
+<div class="mode-settings-container">
+    <div class="mode-group" id="mode-nav">
         </div>
-    </div>
 </div>
         <div id="live-stat">Loading modes...</div>
 
@@ -241,45 +161,48 @@ async function initModes() {
 }
 
 function buildNav() {
-    const optionsContainer = document.getElementById('custom-options');
-    optionsContainer.innerHTML = '';
+    const nav = document.getElementById('mode-nav');
+    nav.innerHTML = '';
     
     availableModes.forEach(mode => {
         const div = document.createElement('div');
-        div.className = 'custom-option';
-        const icon = mode.type === 'time' ? 'fa-clock' : 'fa-font';
-        div.innerHTML = `<i class="fa-solid ${icon}"></i> ${mode.label}`;
+        div.className = 'mode-item';
+        div.id = `mode-${mode.id}`;
         
-        div.onclick = (e) => {
-            e.stopPropagation(); 
-            selectMode(mode);
-        };
-        optionsContainer.appendChild(div);
+        // Icon Logic
+        let iconClass = mode.type === 'time' ? 'fa-clock' : 'fa-font';
+        if (mode.id === 'blitz') iconClass = 'fa-fire';
+        
+        div.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mode.label}`;
+        
+        div.onclick = () => selectMode(mode);
+        nav.appendChild(div);
     });
 }
 
 async function selectMode(mode) {
     activeModeConfig = mode;
-    
-    // Update Dropdown UI
-    document.getElementById('selected-label').innerText = mode.label;
-    const iconEl = document.getElementById('selected-icon');
-    iconEl.className = mode.type === 'time' ? 'fa-solid fa-clock' : 'fa-solid fa-font';
-    
-    document.querySelectorAll('.custom-option').forEach(opt => {
-        opt.classList.toggle('selected', opt.innerText.includes(mode.label));
-    });
-    document.getElementById('custom-select').classList.remove('open');
 
-    // FETCH WORDS for the selected mode
+    document.querySelectorAll('.mode-item').forEach(el => {
+        el.classList.remove('active', 'blitz-active');
+    });
+
+    const activeEl = document.getElementById(`mode-${mode.id}`);
+    if (activeEl) {
+        if (mode.id === 'blitz') {
+            activeEl.classList.add('blitz-active');
+        } else {
+            activeEl.classList.add('active');
+        }
+    }
+
     try {
-        liveStat.innerText = "Loading words...";
         const wordPoolUrl = mode.wordpool || '../data/json/wordlistcommon.json';
         const resp = await fetch(wordPoolUrl);
         wordsList = await resp.json();
         resetGame(); 
     } catch (err) {
-        liveStat.innerText = "Error loading wordlist";
+        liveStat.innerText = "Error loading mode";
     }
 }
 
