@@ -127,3 +127,27 @@ footer {
     font-size: 0.7rem;
     border: 1px solid var(--border-color);
 }
+
+.search-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    width: 250px;
+    transition: 0.2s ease;
+}
+.search-container:focus-within {
+    border-color: var(--accent);
+}
+.search-container input {
+    background: transparent;
+    border: none;
+    color: var(--text-bright);
+    padding: 8px 10px;
+    outline: none;
+    width: 100%;
+    font-family: var(--font);
+}
+.search-container i { color: var(--text-faded); font-size: 0.8rem; }
