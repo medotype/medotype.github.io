@@ -31,4 +31,14 @@ iframe.onload = function() {
     updateTitle();
 };
 
+function handleSearch() {
+    const input = document.getElementById('global-search');
+    const query = input.value.trim();
+    if (query) {
+        navigateFrame(`pages/view-profile.html?username=${encodeURIComponent(query)}`, { tagName: 'SEARCH' });
+        input.value = ''; 
+    }
+}
+
 setInterval(updateTitle, 1000);
+
