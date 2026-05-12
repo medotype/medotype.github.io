@@ -38,9 +38,7 @@
             letter-spacing: -0.02em;
         }
 
-        .header h1 i {
-            color: var(--accent); 
-        }
+        .header h1 i { color: var(--accent); }
 
         .mode-nav { 
             background: var(--card-bg); 
@@ -74,7 +72,7 @@
         .board-card { 
             background: var(--card-bg); 
             border-radius: 20px; 
-            padding: 10px; 
+            padding: 10px 10px 20px 10px; 
             border: 1px solid rgba(255,255,255,0.03);
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
@@ -102,19 +100,54 @@
         .wpm-col { color: var(--accent); font-weight: 700; text-align: right; }
         .acc-col { color: var(--text-faded); text-align: right; width: 100px; font-size: 0.9rem; }
 
-        tr:first-child td.user-col { color: var(--success); }
-        
         #status { text-align: center; padding: 60px; color: var(--text-faded); font-style: italic; }
+
+        /* Pagination Controls */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px 0;
+            margin-top: 10px;
+        }
+
+        .page-btn {
+            background: var(--bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-bright);
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: var(--font);
+            transition: 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: var(--text-faded);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>Leaderboard</h1>
+        <h1><i class="fa-solid fa-trophy"></i> Leaderboard</h1>
         <div class="mode-nav">
-            <button class="mode-btn active" onclick="loadLeaderboard('time_15', this)">15s</button>
-            <button class="mode-btn" onclick="loadLeaderboard('words_30', this)">30 words</button>
+            <button class="mode-btn active" onclick="fetchLeaderboardData('time_15', this)">15s</button>
+            <button class="mode-btn" onclick="fetchLeaderboardData('words_30', this)">30 words</button>
         </div>
     </div>
 
@@ -130,7 +163,14 @@
             </thead>
             <tbody id="lb-body"></tbody>
         </table>
+        
         <div id="status">fetching...</div>
+        
+        <div class="pagination" id="pagination" style="display:none">
+            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">Prev</button>
+            <span class="page-info" id="page-info">Page 1</span>
+            <button class="page-btn" id="next-btn" onclick="changePage(1)">Next</button>
+        </div>
     </div>
 </div>
 
@@ -139,27 +179,35 @@
     const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    async function loadLeaderboard(mode, btn) {
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    // Global variables for pagination
+    let currentData = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
-        const body = document.getElementById('lb-body');
+    async function fetchLeaderboardData(mode, btn) {
+        if (btn) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
         const status = document.getElementById('status');
         const table = document.getElementById('lb-table');
+        const pagination = document.getElementById('pagination');
 
-        body.innerHTML = '';
         table.style.display = 'none';
+        pagination.style.display = 'none';
         status.style.display = 'block';
         status.innerText = 'fetching...';
 
         try {
+            // 1. Fetch a large chunk of top scores
             const { data: scores, error: sErr } = await _supabase
                 .from('scores')
                 .select('wpm, accuracy, user_id')
                 .eq('mode', mode)
                 .order('wpm', { ascending: false })
                 .order('accuracy', { ascending: false })
-                .limit(15);
+                .limit(1000); // Fetch up to 1000 to ensure we get plenty of unique users
 
             if (sErr) throw sErr;
             if (!scores || scores.length === 0) {
@@ -167,7 +215,19 @@
                 return;
             }
 
-            const userIds = [...new Set(scores.map(s => s.user_id))];
+            // 2. Filter for unique users (keeps only their very best score)
+            const uniqueScores = [];
+            const seenUsers = new Set();
+
+            for (const s of scores) {
+                if (!seenUsers.has(s.user_id)) {
+                    seenUsers.add(s.user_id);
+                    uniqueScores.push(s);
+                }
+            }
+
+            // 3. Fetch usernames for these unique users
+            const userIds = Array.from(seenUsers);
             const { data: profiles, error: pErr } = await _supabase
                 .from('profiles')
                 .select('id, username')
@@ -177,19 +237,17 @@
 
             const profileMap = Object.fromEntries(profiles.map(p => [p.id, p.username]));
 
+            // 4. Map usernames directly into our finalized array
+            currentData = uniqueScores.map(s => ({
+                ...s,
+                username: profileMap[s.user_id] || "Guest"
+            }));
+
+            // 5. Reset to page 1 and render
+            currentPage = 1;
             status.style.display = 'none';
             table.style.display = 'table';
-
-            scores.forEach((s, i) => {
-                const username = profileMap[s.user_id] || "Guest";
-                body.innerHTML += `
-                    <tr>
-                        <td class="rank-col">${i + 1}</td>
-                        <td class="user-col">${username}</td>
-                        <td class="wpm-col">${s.wpm}</td>
-                        <td class="acc-col">${s.accuracy}%</td>
-                    </tr>`;
-            });
+            renderPage();
 
         } catch (err) {
             console.error("Leaderboard Load Failed:", err);
@@ -197,7 +255,50 @@
         }
     }
 
-    window.onload = () => loadLeaderboard('time_15', document.querySelector('.mode-btn'));
+    function renderPage() {
+        const body = document.getElementById('lb-body');
+        const pagination = document.getElementById('pagination');
+        body.innerHTML = '';
+
+        const totalPages = Math.ceil(currentData.length / ITEMS_PER_PAGE);
+        
+        // Slicing data for the current page
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const pageData = currentData.slice(startIndex, endIndex);
+
+        pageData.forEach((s, i) => {
+            const absoluteRank = startIndex + i + 1;
+            // Only true #1 player gets green text
+            const nameColor = absoluteRank === 1 ? 'var(--success)' : 'inherit';
+
+            body.innerHTML += `
+                <tr>
+                    <td class="rank-col">${absoluteRank}</td>
+                    <td class="user-col" style="color: ${nameColor}">${s.username}</td>
+                    <td class="wpm-col">${s.wpm}</td>
+                    <td class="acc-col">${s.accuracy}%</td>
+                </tr>`;
+        });
+
+        // Setup Pagination Controls
+        if (totalPages > 1) {
+            pagination.style.display = 'flex';
+            document.getElementById('page-info').innerText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages;
+        } else {
+            pagination.style.display = 'none'; // Hide pagination if less than 10 total players
+        }
+    }
+
+    function changePage(direction) {
+        currentPage += direction;
+        renderPage();
+    }
+
+    // Load initial data
+    window.onload = () => fetchLeaderboardData('time_15', document.querySelector('.mode-btn'));
 </script>
 </body>
 </html>
