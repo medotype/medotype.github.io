@@ -35,7 +35,7 @@ function handleSearch() {
     const input = document.getElementById('global-search');
     const query = input.value.trim();
     if (query) {
-        navigateFrame(`pages/view-profile.html?username=${encodeURIComponent(query)}`, { tagName: 'SEARCH' });
+        navigateFrame(`pages/loadprofile.html?username=${encodeURIComponent(query)}`, { tagName: 'SEARCH' });
         input.value = ''; 
     }
 }
