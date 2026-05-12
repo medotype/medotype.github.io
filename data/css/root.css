@@ -1,0 +1,9 @@
+        :root {
+            --bg: #121213;
+            --card-bg: #1e1e1f;
+            --text-faded: #565656;
+            --text-bright: #ffffff;
+            --accent: #3b82f6;
+            --error: #ef4444;
+            --font: 'Inter', sans-serif;
+        }
