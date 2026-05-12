@@ -162,34 +162,34 @@
     </div>
 
     <script>
-        const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
-        const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
-        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
+const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
+const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        // Dynamic State Variables
-        let availableModes = [];
-        let activeModeConfig = null;
-        let wordsList = [];
-        
-        // Game State Variables
-        let isStarted = false;
-        let activeWordIdx = 0;
-        let activeCharIdx = 0;
-        let startTime = null;
-        let timerInterval = null;
-        let correctChars = 0;
-        let totalKeystrokes = 0;
+// Dynamic State Variables
+let availableModes = [];
+let activeModeConfig = null;
+let wordsList = [];
 
-        const container = document.getElementById('word-container');
-        const liveStat = document.getElementById('live-stat');
-        const results = document.getElementById('results-screen');
-        const nav = document.getElementById('nav');
+// Game State Variables
+let isStarted = false;
+let activeWordIdx = 0;
+let activeCharIdx = 0;
+let startTime = null;
+let timerInterval = null;
+let correctChars = 0;
+let totalKeystrokes = 0;
 
-        function toggleDropdown() {
+const container = document.getElementById('word-container');
+const liveStat = document.getElementById('live-stat');
+const results = document.getElementById('results-screen');
+
+// --- DROPDOWN LOGIC ---
+
+function toggleDropdown() {
     document.getElementById('custom-select').classList.toggle('open');
 }
 
-// Close dropdown if user clicks outside
 window.addEventListener('click', function(e) {
     const select = document.getElementById('custom-select');
     if (!select.contains(e.target)) {
@@ -199,14 +199,19 @@ window.addEventListener('click', function(e) {
 
 async function initModes() {
     try {
+        // Fetch the list of modes
         const response = await fetch('../data/json/modelist.json');
+        if(!response.ok) throw new Error("File not found");
         availableModes = await response.json();
+        
         buildNav();
         
+        // Auto-select the first mode in the list
         if (availableModes.length > 0) {
             selectMode(availableModes[0]);
         }
     } catch (e) {
+        console.error(e);
         document.getElementById('selected-label').innerText = "Error loading modes";
     }
 }
@@ -218,22 +223,21 @@ function buildNav() {
     availableModes.forEach(mode => {
         const div = document.createElement('div');
         div.className = 'custom-option';
-        
-        // Spicy: choose icon based on type
         const icon = mode.type === 'time' ? 'fa-clock' : 'fa-font';
-        
         div.innerHTML = `<i class="fa-solid ${icon}"></i> ${mode.label}`;
         
         div.onclick = (e) => {
-            e.stopPropagation(); // Prevent re-opening
+            e.stopPropagation(); 
             selectMode(mode);
         };
         optionsContainer.appendChild(div);
     });
 }
-function selectMode(mode) {
+
+async function selectMode(mode) {
     activeModeConfig = mode;
     
+    // Update Dropdown UI
     document.getElementById('selected-label').innerText = mode.label;
     const iconEl = document.getElementById('selected-icon');
     iconEl.className = mode.type === 'time' ? 'fa-solid fa-clock' : 'fa-solid fa-font';
@@ -241,138 +245,146 @@ function selectMode(mode) {
     document.querySelectorAll('.custom-option').forEach(opt => {
         opt.classList.toggle('selected', opt.innerText.includes(mode.label));
     });
-
     document.getElementById('custom-select').classList.remove('open');
-    
-    changeMode(mode.id); 
+
+    // FETCH WORDS for the selected mode
+    try {
+        liveStat.innerText = "Loading words...";
+        const wordPoolUrl = mode.wordpool || '../data/json/wordlistcommon.json';
+        const resp = await fetch(wordPoolUrl);
+        wordsList = await resp.json();
+        resetGame(); 
+    } catch (err) {
+        liveStat.innerText = "Error loading wordlist";
+    }
 }
 
-        function resetGame() {
-            clearInterval(timerInterval);
-            isStarted = false;
-            activeWordIdx = 0;
+// --- GAME LOGIC ---
+
+function resetGame() {
+    clearInterval(timerInterval);
+    isStarted = false;
+    activeWordIdx = 0;
+    activeCharIdx = 0;
+    correctChars = 0;
+    totalKeystrokes = 0;
+    startTime = null;
+    container.style.top = "0px";
+    results.style.display = 'none';
+    container.classList.remove('hidden');
+    
+    if (activeModeConfig.type === 'time') {
+        liveStat.innerText = activeModeConfig.value;
+    } else {
+        liveStat.innerText = `0 / ${activeModeConfig.value}`;
+    }
+
+    if (!wordsList || wordsList.length === 0) return;
+
+    const count = activeModeConfig.renderCount || 50;
+    const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
+    
+    container.innerHTML = shuffled.map((w, i) => `
+        <span class="word ${i === 0 ? 'active' : ''}">
+            ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
+        </span>
+    `).join('');
+}
+
+window.addEventListener('keydown', (e) => {
+    if (results.style.display === 'block' || !activeModeConfig || isStarted && !startTime) return;
+    
+    // Prevent scrolling with space
+    if(e.key === ' ') e.preventDefault();
+
+    if (!isStarted && e.key.length === 1) {
+        isStarted = true;
+        startTime = Date.now();
+        if (activeModeConfig.type === 'time') startTimer();
+    }
+
+    const words = container.querySelectorAll('.word');
+    const currentWord = words[activeWordIdx];
+    if (!currentWord) return;
+    const letters = currentWord.querySelectorAll('.letter');
+
+    if (e.key === 'Backspace') {
+        if (activeCharIdx > 0) {
+            activeCharIdx--;
+            letters[activeCharIdx].className = 'letter';
+        }
+    } else if (e.key === ' ') {
+        if (activeCharIdx > 0) {
+            currentWord.classList.remove('active');
+            activeWordIdx++;
             activeCharIdx = 0;
-            correctChars = 0;
-            totalKeystrokes = 0;
-            startTime = null;
-            container.style.top = "0px";
-            results.style.display = 'none';
-            container.classList.remove('hidden');
             
-            if (activeModeConfig.type === 'time') {
-                liveStat.innerText = activeModeConfig.value;
-            } else if (activeModeConfig.type === 'words') {
-                liveStat.innerText = `0 / ${activeModeConfig.value}`;
+            if (activeWordIdx < words.length) {
+                const nextWord = words[activeWordIdx];
+                nextWord.classList.add('active');
+                handleScroll(nextWord);
             }
-
-            if (wordsList.length === 0) return;
-
-            const count = activeModeConfig.renderCount || 50;
-            const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
             
-            container.innerHTML = shuffled.map((w, i) => `
-                <span class="word ${i === 0 ? 'active' : ''}">
-                    ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
-                </span>
-            `).join('');
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (results.style.display === 'block' || !activeModeConfig) return;
-            
-            // Start the game logic
-            if (!isStarted && e.key.length === 1) {
-                isStarted = true;
-                startTime = Date.now();
-                if (activeModeConfig.type === 'time') startTimer();
-            }
-
-            const words = container.querySelectorAll('.word');
-            const currentWord = words[activeWordIdx];
-            if (!currentWord) return;
-            const letters = currentWord.querySelectorAll('.letter');
-
-            if (e.key === 'Backspace') {
-                if (activeCharIdx > 0) {
-                    activeCharIdx--;
-                    letters[activeCharIdx].className = 'letter';
-                }
-            } else if (e.key === ' ') {
-                e.preventDefault();
-                if (activeCharIdx > 0) {
-                    currentWord.classList.remove('active');
-                    activeWordIdx++;
-                    activeCharIdx = 0;
-                    
-                    if (activeWordIdx < words.length) {
-                        const nextWord = words[activeWordIdx];
-                        nextWord.classList.add('active');
-                        handleScroll(nextWord);
-                    }
-                    
-                    // Dynamic Word-Count checking
-                    if (activeModeConfig.type === 'words') {
-                        liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
-                        if (activeWordIdx >= activeModeConfig.value) finish();
-                    }
-                }
-            } else if (e.key.length === 1) {
-                if (activeCharIdx < letters.length) {
-                    totalKeystrokes++;
-                    if (e.key === letters[activeCharIdx].innerText) {
-                        letters[activeCharIdx].classList.add('correct');
-                        correctChars++;
-                    } else {
-                        letters[activeCharIdx].classList.add('incorrect');
-                    }
-                    activeCharIdx++;
-                }
-            }
-        });
-
-        function handleScroll(activeWord) {
-            const offset = activeWord.offsetTop;
-            if (offset > 40) {
-                container.style.top = `-${offset}px`;
+            if (activeModeConfig.type === 'words') {
+                liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
+                if (activeWordIdx >= activeModeConfig.value) finish();
             }
         }
-
-        function startTimer() {
-            let left = activeModeConfig.value; // Pull time limit directly from JSON
-            timerInterval = setInterval(() => {
-                left--;
-                liveStat.innerText = left;
-                if (left <= 0) finish();
-            }, 1000);
-        }
-
-        async function finish() {
-            clearInterval(timerInterval);
-            
-            const durationMinutes = (Date.now() - startTime) / 60000;
-            const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
-            const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
-
-            let saved = false;
-            const { data: { session } } = await _supabase.auth.getSession();
-
-            if (session) {
-                const { error } = await _supabase
-                    .from('scores')
-                    .insert([{ 
-                        user_id: session.user.id, 
-                        wpm: wpm, 
-                        accuracy: acc, 
-                        mode: activeModeConfig.id
-                    }]);
-                
-                if (!error) saved = true;
+    } else if (e.key.length === 1) {
+        if (activeCharIdx < letters.length) {
+            totalKeystrokes++;
+            if (e.key === letters[activeCharIdx].innerText) {
+                letters[activeCharIdx].classList.add('correct');
+                correctChars++;
+            } else {
+                letters[activeCharIdx].classList.add('incorrect');
             }
-
-            window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
+            activeCharIdx++;
         }
+    }
+});
 
-        initModes();
-    </script>
+function handleScroll(activeWord) {
+    const offset = activeWord.offsetTop;
+    if (offset > 40) {
+        container.style.top = `-${offset}px`;
+    }
+}
+
+function startTimer() {
+    let left = activeModeConfig.value;
+    timerInterval = setInterval(() => {
+        left--;
+        liveStat.innerText = left;
+        if (left <= 0) finish();
+    }, 1000);
+}
+
+async function finish() {
+    clearInterval(timerInterval);
+    const durationMinutes = (Date.now() - startTime) / 60000;
+    const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
+    const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
+
+    let saved = false;
+    const { data: { session } } = await _supabase.auth.getSession();
+
+    if (session) {
+        const { error } = await _supabase
+            .from('scores')
+            .insert([{ 
+                user_id: session.user.id, 
+                wpm: wpm, 
+                accuracy: acc, 
+                mode: activeModeConfig.id
+            }]);
+        if (!error) saved = true;
+    }
+
+    window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
+}
+
+initModes();
+        </script>
 </body>
 </html>
