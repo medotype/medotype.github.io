@@ -34,38 +34,118 @@
         #restart-btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .hidden { visibility: hidden; opacity: 0; }
 
-                 #mode-selector {
-    background: var(--card-bg);
-    color: var(--text-faded);
-    border: 1px solid rgba(255,255,255,0.05);
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-family: var(--font);
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-    transition: 0.2s;
-    appearance: none; /* Removes default browser arrow */
-    padding-right: 30px;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 1em;
+        .custom-select-wrapper {
+    position: relative;
+    user-select: none;
+    width: 200px;
+    margin: 0 auto 3rem;
+    z-index: 100;
 }
 
-#mode-selector:hover {
-    color: var(--text-bright);
+.custom-select {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.custom-select:hover {
     border-color: var(--accent);
 }
+
+.custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-faded);
+}
+
+.custom-select-trigger span {
+    flex-grow: 1;
+    text-align: left;
+    margin-left: 10px;
+}
+
+.custom-select-trigger i.arrow {
+    font-size: 0.7rem;
+    transition: transform 0.3s;
+}
+
+/* Open State */
+.custom-select.open {
+    border-radius: 12px 12px 0 0;
+    border-color: var(--accent);
+}
+
+.custom-select.open .arrow {
+    transform: rotate(180deg);
+}
+
+.custom-options {
+    position: absolute;
+    display: block;
+    top: 100%;
+    left: -1px;
+    right: -1px;
+    background: var(--card-bg);
+    border: 1px solid var(--accent);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.custom-select.open .custom-options {
+    opacity: 1;
+    visibility: visible;
+}
+
+.custom-option {
+    padding: 12px 15px;
+    font-size: 0.85rem;
+    color: var(--text-faded);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-option:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--accent);
+}
+
+.custom-option.selected {
+    color: var(--accent);
+    background: rgba(59, 130, 246, 0.1);
+}
+        
     </style>
 </head>
 <body>
 
     <div id="app">
-<div id="nav-container">
-    <select id="mode-selector" onchange="changeMode(this.value)">
-        </select>
+<div class="custom-select-wrapper">
+    <div class="custom-select" id="custom-select" onclick="toggleDropdown()">
+        <div class="custom-select-trigger">
+            <i class="fa-solid fa-clock-rotate-left" id="selected-icon"></i>
+            <span id="selected-label">Loading modes...</span>
+            <i class="fa-solid fa-chevron-down arrow"></i>
+        </div>
+        <div class="custom-options" id="custom-options">
+            </div>
+    </div>
 </div>
         <div id="live-stat">Loading modes...</div>
 
@@ -105,52 +185,67 @@
         const results = document.getElementById('results-screen');
         const nav = document.getElementById('nav');
 
-        async function initModes() {
-            try {
-                const response = await fetch('../data/json/modelist.json');
-                availableModes = await response.json();
-                buildNav();
-                
-                if (availableModes.length > 0) {
-                    changeMode(availableModes[0].id);
-                }
-            } catch (e) {
-                liveStat.innerText = "Error loading modelist.json";
-                console.error(e);
-            }
-        }
-
-function buildNav() {
-    const selector = document.getElementById('mode-selector');
-    selector.innerHTML = ''; 
-    
-    availableModes.forEach(mode => {
-        const option = document.createElement('option');
-        option.value = mode.id;
-        option.innerText = mode.label;
-        selector.appendChild(option);
-    });
+        function toggleDropdown() {
+    document.getElementById('custom-select').classList.toggle('open');
 }
 
-        // 3. Switch active mode and fetch the corresponding word pool
-        async function changeMode(modeId) {
-            activeModeConfig = availableModes.find(m => m.id === modeId);
-            
-            // Update UI highlighting
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mode === modeId);
-            });
+// Close dropdown if user clicks outside
+window.addEventListener('click', function(e) {
+    const select = document.getElementById('custom-select');
+    if (!select.contains(e.target)) {
+        select.classList.remove('open');
+    }
+});
 
-            // Fetch specific dictionary (allows custom dictionaries for specific modes)
-            try {
-                const wordPoolUrl = activeModeConfig.wordpool || '../data/json/wordlistcommon.json';
-                const response = await fetch(wordPoolUrl);
-                wordsList = await response.json();
-                resetGame();
-            } catch (e) {
-                liveStat.innerText = "Error loading words";
-            }
+async function initModes() {
+    try {
+        const response = await fetch('../data/json/modelist.json');
+        availableModes = await response.json();
+        buildNav();
+        
+        if (availableModes.length > 0) {
+            selectMode(availableModes[0]);
         }
+    } catch (e) {
+        document.getElementById('selected-label').innerText = "Error loading modes";
+    }
+}
+
+function buildNav() {
+    const optionsContainer = document.getElementById('custom-options');
+    optionsContainer.innerHTML = '';
+    
+    availableModes.forEach(mode => {
+        const div = document.createElement('div');
+        div.className = 'custom-option';
+        
+        // Spicy: choose icon based on type
+        const icon = mode.type === 'time' ? 'fa-clock' : 'fa-font';
+        
+        div.innerHTML = `<i class="fa-solid ${icon}"></i> ${mode.label}`;
+        
+        div.onclick = (e) => {
+            e.stopPropagation(); // Prevent re-opening
+            selectMode(mode);
+        };
+        optionsContainer.appendChild(div);
+    });
+}
+function selectMode(mode) {
+    activeModeConfig = mode;
+    
+    document.getElementById('selected-label').innerText = mode.label;
+    const iconEl = document.getElementById('selected-icon');
+    iconEl.className = mode.type === 'time' ? 'fa-solid fa-clock' : 'fa-solid fa-font';
+    
+    document.querySelectorAll('.custom-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.innerText.includes(mode.label));
+    });
+
+    document.getElementById('custom-select').classList.remove('open');
+    
+    changeMode(mode.id); 
+}
 
         function resetGame() {
             clearInterval(timerInterval);
