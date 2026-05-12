@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Settings</title>
+    <link rel="stylesheet" href="../data/css/root.css">
+    <style>
+        body { padding: 2rem; display: flex; flex-direction: column; align-items: center; }
+        .settings-container { width: 100%; max-width: 600px; }
+        
+        .section-title { 
+            color: var(--text-faded); 
+            text-transform: uppercase; 
+            font-size: 0.8rem; 
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .theme-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .theme-card:hover { transform: translateY(-3px); }
+        .theme-card.active { border-color: var(--accent); }
+
+        .preview-dots {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <div class="settings-container">
+        <h1 style="margin-bottom: 2rem;">Settings</h1>
+
+        <span class="section-title">Theme Select</span>
+        <div class="theme-grid">
+            <div class="theme-card" onclick="setTheme('default')">
+                <span style="color: #ffffff">Default Dark</span>
+                <div class="preview-dots">
+                    <div class="dot" style="background: #121213"></div>
+                    <div class="dot" style="background: #3b82f6"></div>
+                </div>
+            </div>
+
+            <div class="theme-card" onclick="setTheme('theme-carbon')">
+                <span style="color: #f5e076">Carbon</span>
+                <div class="preview-dots">
+                    <div class="dot" style="background: #2b2b2b"></div>
+                    <div class="dot" style="background: #f5e076"></div>
+                </div>
+            </div>
+
+            <div class="theme-card" onclick="setTheme('theme-sakura')">
+                <span style="color: #e11d48">Sakura</span>
+                <div class="preview-dots">
+                    <div class="dot" style="background: #fff1f2"></div>
+                    <div class="dot" style="background: #e11d48"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setTheme(themeName) {
+            // Remove old theme classes
+            document.body.className = '';
+            if (themeName !== 'default') {
+                document.body.classList.add(themeName);
+            }
+
+            // Save to LocalStorage
+            localStorage.setItem('user-theme', themeName);
+
+            // Update UI
+            document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // IMPORTANT: Tell the parent index.html to update its own theme too
+            if (window.parent && window.parent.applyGlobalTheme) {
+                window.parent.applyGlobalTheme(themeName);
+            }
+        }
+
+        // Initialize on load
+        const savedTheme = localStorage.getItem('user-theme') || 'default';
+        setTheme(savedTheme);
+    </script>
+</body>
+</html>
