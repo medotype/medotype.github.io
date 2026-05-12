@@ -5,7 +5,7 @@
         "type": "time",
         "value": 15,
         "wordpool": "../data/json/wordlistcommon.json",
-        "renderCount": 80
+        "renderCount": 150
     },
     {
         "id": "time_60",
@@ -13,7 +13,7 @@
         "type": "time",
         "value": 60,
         "wordpool": "../data/json/wordlistcommon.json",
-        "renderCount": 200
+        "renderCount": 250
     },
     {
         "id": "words_15",
@@ -30,5 +30,13 @@
         "value": 30,
         "wordpool": "../data/json/wordlistcommon.json",
         "renderCount": 30
+    },
+    {
+        "id": "blitz",
+        "label": "Blitz",
+        "type": "time",
+        "value": 5,
+        "wordpool": "../data/json/wordlistcommon.json",
+        "renderCount": 100
     }
 ]
