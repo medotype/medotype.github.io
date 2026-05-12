@@ -82,20 +82,16 @@
 
     <script>
         function setTheme(themeName) {
-            // Remove old theme classes
             document.body.className = '';
             if (themeName !== 'default') {
                 document.body.classList.add(themeName);
             }
 
-            // Save to LocalStorage
             localStorage.setItem('user-theme', themeName);
 
-            // Update UI
             document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active'));
             event.currentTarget.classList.add('active');
 
-            // IMPORTANT: Tell the parent index.html to update its own theme too
             if (window.parent && window.parent.applyGlobalTheme) {
                 window.parent.applyGlobalTheme(themeName);
             }
