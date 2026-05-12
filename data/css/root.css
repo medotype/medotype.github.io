@@ -13,3 +13,19 @@
             box-sizing: border-box;
             transition: all 0.2s ease;
         }
+
+body.theme-carbon {
+    --bg: #2b2b2b;
+    --card-bg: #323232;
+    --text-faded: #666666;
+    --text-bright: #f5e076;
+    --accent: #f5e076;
+}
+
+body.theme-sakura {
+    --bg: #fff1f2;
+    --card-bg: #ffffff;
+    --text-faded: #fb7185;
+    --text-bright: #e11d48;
+    --accent: #e11d48;
+}
