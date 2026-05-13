@@ -144,7 +144,7 @@ window.addEventListener('click', function(e) {
 async function initModes() {
     try {
         // Fetch the list of modes
-        const response = await fetch('../data/json/modelist.json');
+        const response = await fetch('/data/json/modelist.json');
         if(!response.ok) throw new Error("File not found");
         availableModes = await response.json();
         
