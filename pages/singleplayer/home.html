@@ -196,14 +196,22 @@ async function selectMode(mode) {
         }
     }
 
-    try {
-        const wordPoolUrl = mode.wordpool || '../../data/json/wordlistcommon.json';
-        const resp = await fetch(wordPoolUrl);
-        wordsList = await resp.json();
-        resetGame(); 
-    } catch (err) {
-        liveStat.innerText = "Error loading mode";
+try {
+    const wordPoolUrl = mode.wordpool || '../../data/json/wordlistcommon.json';
+    const resp = await fetch(wordPoolUrl);
+    if (!resp.ok) {
+        throw new Error(`HTTP error! status: ${resp.status} at ${wordPoolUrl}`);
     }
+    wordsList = await resp.json();
+    if (Array.isArray(wordsList) && wordsList.length > 0) {
+        resetGame(); 
+    } else {
+        throw new Error("Wordlist is empty or not an array");
+    }
+
+} catch (err) {
+    console.error("Failed to load words:", err);
+    liveStat.innerText = "Error: JSON path or format incorrect";
 }
 
 // --- GAME LOGIC ---
