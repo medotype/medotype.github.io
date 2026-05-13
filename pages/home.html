@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../data/css/root.css">
+    <script src="data/js/theme.js"></script>
+    <style>
+
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-bright); 
+            font-family: var(--font); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+        }
+
+        #menu-container {
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header-meta {
+            color: var(--text-faded);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 2.5rem;
+        }
+
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .mode-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            transition: 0.2s ease;
+        }
+
+        .mode-card i {
+            font-size: 2rem;
+            color: var(--text-faded);
+            margin-bottom: 1.5rem;
+            transition: 0.2s;
+        }
+
+        .mode-card h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-bright);
+        }
+
+        .mode-card p {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-faded);
+            line-height: 1.4;
+        }
+
+        .mode-card:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .mode-card:hover i {
+            color: var(--text-bright);
+            transform: scale(1.1);
+        }
+
+        .single:hover::after { height: 4px; background: #3b82f6; }
+        .ranked:hover::after { height: 4px; background: #ef4444; }
+        .practice:hover::after { height: 4px; background: #10b981; }
+
+        @media (max-width: 768px) {
+            .modes-grid {
+                grid-template-columns: 1fr;
+            }
+            .mode-card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="menu-container">
+        <div class="header-meta">Select Gamemode</div>
+        
+        <div class="modes-grid">
+            <a href="singleplayer/home.html" class="mode-card single">
+                <i class="fa-solid fa-user"></i>
+                <h2>Singleplayer</h2>
+                <p>Standard typing test. Saves to the singleplayer leaderboard.</p>
+            </a>
+
+            <a href="multiplayer/home.html" class="mode-card ranked">
+                <i class="fa-solid fa-trophy"></i>
+                <h2>Ranked</h2>
+                <p>Competitive matches against other players. Gives you ranks based on performance.</p>
+            </a>
+
+            <a href="practice/home.html" class="mode-card practice">
+                <i class="fa-solid fa-dumbbell"></i>
+                <h2>Practice</h2>
+                <p>Warm up without affecting your rank or stats.</p>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
