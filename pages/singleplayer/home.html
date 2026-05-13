@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/data/css/root.css">
-    <script src="/data/js/theme.js"></script>
+    <link rel="stylesheet" href="../../data/css/root.css">
+    <script src="../../data/js/theme.js"></script>
     <style>
         body { background-color: var(--bg); color: var(--text-bright); font-family: var(--font); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         #app { width: 100%; max-width: 850px; text-align: center; padding: 2rem; position: relative; }
@@ -35,62 +35,59 @@
         #restart-btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .hidden { visibility: hidden; opacity: 0; }
 
-.mode-settings-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 3rem;
-    animation: fadeIn 0.5s ease;
-}
+        .mode-settings-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.5s ease;
+        }
 
-.mode-group {
-    display: flex;
-    background: var(--card-bg);
-    padding: 4px;
-    border-radius: 10px;
-    gap: 2px;
-}
+        .mode-group {
+            display: flex;
+            background: var(--card-bg);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 2px;
+        }
 
-.mode-item {
-    padding: 8px 16px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-faded);
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+        .mode-item {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-faded);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-.mode-item:hover {
-    color: var(--text-bright);
-}
+        .mode-item:hover {
+            color: var(--text-bright);
+        }
 
-.mode-item.active {
-    color: var(--accent);
-    background: rgba(255, 255, 255, 0.03);
-}
+        .mode-item.active {
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.03);
+        }
 
-/* Specific Blitz Styling */
-.mode-item.blitz-active {
-    color: #ff4500;
-    text-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
-}
+        .mode-item.blitz-active {
+            color: #ff4500;
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
+        }
 
-.mode-item i {
-    font-size: 0.8rem;
-}
-        
+        .mode-item i {
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
 
     <div id="app">
-<div class="mode-settings-container">
-    <div class="mode-group" id="mode-nav">
+        <div class="mode-settings-container">
+            <div class="mode-group" id="mode-nav"></div>
         </div>
-</div>
         <div id="live-stat">Loading modes...</div>
 
         <div id="typing-viewport">
@@ -106,237 +103,229 @@
     </div>
 
     <script>
-const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
-const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
-const _supabase = supabase.createClient(SB_URL, SB_KEY);
+        const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
+        const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-let availableModes = [];
-let activeModeConfig = null;
-let wordsList = [];
+        let availableModes = [];
+        let activeModeConfig = null;
+        let wordsList = [];
 
-let isStarted = false;
-let activeWordIdx = 0;
-let activeCharIdx = 0;
-let startTime = null;
-let timerInterval = null;
-let correctChars = 0;
-let totalKeystrokes = 0;
+        let isStarted = false;
+        let activeWordIdx = 0;
+        let activeCharIdx = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let correctChars = 0;
+        let totalKeystrokes = 0;
 
-const container = document.getElementById('word-container');
-const liveStat = document.getElementById('live-stat');
-const results = document.getElementById('results-screen');
+        const container = document.getElementById('word-container');
+        const liveStat = document.getElementById('live-stat');
+        const results = document.getElementById('results-screen');
 
-
-function toggleDropdown() {
-    document.getElementById('custom-select').classList.toggle('open');
-}
-
-window.addEventListener('click', function(e) {
-    const select = document.getElementById('custom-select');
-    if (!select.contains(e.target)) {
-        select.classList.remove('open');
-    }
-});
-
-async function initModes() {
-    try {
-        // Fetch the list of modes
-        const response = await fetch('/data/json/modelist.json');
-        if(!response.ok) throw new Error("File not found");
-        availableModes = await response.json();
-        
-        buildNav();
-        
-        // Auto-select the first mode in the list
-        if (availableModes.length > 0) {
-            selectMode(availableModes[0]);
+        function toggleDropdown() {
+            document.getElementById('custom-select').classList.toggle('open');
         }
-    } catch (e) {
-        console.error(e);
-        document.getElementById('selected-label').innerText = "Error loading modes";
-    }
-}
 
-function buildNav() {
-    const nav = document.getElementById('mode-nav');
-    nav.innerHTML = '';
-    
-    availableModes.forEach(mode => {
-        const div = document.createElement('div');
-        div.className = 'mode-item';
-        div.id = `mode-${mode.id}`;
-        
-        // Icon Logic
-        let iconClass = mode.type === 'time' ? 'fa-clock' : 'fa-font';
-        if (mode.id === 'blitz') iconClass = 'fa-fire';
-        
-        div.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mode.label}`;
-        
-        div.onclick = () => selectMode(mode);
-        nav.appendChild(div);
-    });
-}
+        window.addEventListener('click', function(e) {
+            const select = document.getElementById('custom-select');
+            if (select && !select.contains(e.target)) {
+                select.classList.remove('open');
+            }
+        });
 
-async function selectMode(mode) {
-    activeModeConfig = mode;
-
-    document.querySelectorAll('.mode-item').forEach(el => {
-        el.classList.remove('active', 'blitz-active');
-    });
-
-    const activeEl = document.getElementById(`mode-${mode.id}`);
-    if (activeEl) {
-        if (mode.id === 'blitz') {
-            activeEl.classList.add('blitz-active');
-        } else {
-            activeEl.classList.add('active');
+        async function initModes() {
+            try {
+                const response = await fetch('../../data/json/modelist.json');
+                if(!response.ok) throw new Error("File not found");
+                availableModes = await response.json();
+                
+                buildNav();
+                
+                if (availableModes.length > 0) {
+                    selectMode(availableModes[0]);
+                }
+            } catch (e) {
+                console.error(e);
+                liveStat.innerText = "Error loading modes";
+            }
         }
-    }
-}
 
-try {
-    const wordPoolUrl = mode.wordpool || '../../data/json/wordlistcommon.json';
-    const resp = await fetch(wordPoolUrl);
-    if (!resp.ok) {
-        throw new Error(`HTTP error! status: ${resp.status} at ${wordPoolUrl}`);
-    }
-    wordsList = await resp.json();
-    if (Array.isArray(wordsList) && wordsList.length > 0) {
-        resetGame(); 
-    } else {
-        throw new Error("Wordlist is empty or not an array");
-    }
-
-} catch (err) {
-    console.error("Failed to load words:", err);
-    liveStat.innerText = "Error: JSON path or format incorrect";
-}
-
-// --- GAME LOGIC ---
-
-function resetGame() {
-    clearInterval(timerInterval);
-    isStarted = false;
-    activeWordIdx = 0;
-    activeCharIdx = 0;
-    correctChars = 0;
-    totalKeystrokes = 0;
-    startTime = null;
-    container.style.top = "0px";
-    results.style.display = 'none';
-    container.classList.remove('hidden');
-    
-    if (activeModeConfig.type === 'time') {
-        liveStat.innerText = activeModeConfig.value;
-    } else {
-        liveStat.innerText = `0 / ${activeModeConfig.value}`;
-    }
-
-    if (!wordsList || wordsList.length === 0) return;
-
-    const count = activeModeConfig.renderCount || 50;
-    const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
-    
-    container.innerHTML = shuffled.map((w, i) => `
-        <span class="word ${i === 0 ? 'active' : ''}">
-            ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
-        </span>
-    `).join('');
-}
-
-window.addEventListener('keydown', (e) => {
-    if (results.style.display === 'block' || !activeModeConfig || isStarted && !startTime) return;
-    
-    if(e.key === ' ') e.preventDefault();
-
-    if (!isStarted && e.key.length === 1) {
-        isStarted = true;
-        startTime = Date.now();
-        if (activeModeConfig.type === 'time') startTimer();
-    }
-
-    const words = container.querySelectorAll('.word');
-    const currentWord = words[activeWordIdx];
-    if (!currentWord) return;
-    const letters = currentWord.querySelectorAll('.letter');
-
-    if (e.key === 'Backspace') {
-        if (activeCharIdx > 0) {
-            activeCharIdx--;
-            letters[activeCharIdx].className = 'letter';
+        function buildNav() {
+            const nav = document.getElementById('mode-nav');
+            nav.innerHTML = '';
+            
+            availableModes.forEach(mode => {
+                const div = document.createElement('div');
+                div.className = 'mode-item';
+                div.id = `mode-${mode.id}`;
+                
+                let iconClass = mode.type === 'time' ? 'fa-clock' : 'fa-font';
+                if (mode.id === 'blitz') iconClass = 'fa-fire';
+                
+                div.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mode.label}`;
+                div.onclick = () => selectMode(mode);
+                nav.appendChild(div);
+            });
         }
-    } else if (e.key === ' ') {
-        if (activeCharIdx > 0) {
-            currentWord.classList.remove('active');
-            activeWordIdx++;
+
+        async function selectMode(mode) {
+            activeModeConfig = mode;
+
+            document.querySelectorAll('.mode-item').forEach(el => {
+                el.classList.remove('active', 'blitz-active');
+            });
+
+            const activeEl = document.getElementById(`mode-${mode.id}`);
+            if (activeEl) {
+                if (mode.id === 'blitz') {
+                    activeEl.classList.add('blitz-active');
+                } else {
+                    activeEl.classList.add('active');
+                }
+            }
+
+            try {
+                const wordPoolUrl = mode.wordpool || '../../data/json/wordlistcommon.json';
+                const resp = await fetch(wordPoolUrl);
+                if (!resp.ok) {
+                    throw new Error(`HTTP error! status: ${resp.status}`);
+                }
+                wordsList = await resp.json();
+                if (Array.isArray(wordsList) && wordsList.length > 0) {
+                    resetGame(); 
+                } else {
+                    throw new Error("Wordlist is empty or not an array");
+                }
+            } catch (err) {
+                console.error("Failed to load words:", err);
+                liveStat.innerText = "Error: JSON path or format incorrect";
+            }
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            isStarted = false;
+            activeWordIdx = 0;
             activeCharIdx = 0;
+            correctChars = 0;
+            totalKeystrokes = 0;
+            startTime = null;
+            container.style.top = "0px";
+            results.style.display = 'none';
+            container.classList.remove('hidden');
             
-            if (activeWordIdx < words.length) {
-                const nextWord = words[activeWordIdx];
-                nextWord.classList.add('active');
-                handleScroll(nextWord);
-            }
-            
-            if (activeModeConfig.type === 'words') {
-                liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
-                if (activeWordIdx >= activeModeConfig.value) finish();
-            }
-        }
-    } else if (e.key.length === 1) {
-        if (activeCharIdx < letters.length) {
-            totalKeystrokes++;
-            if (e.key === letters[activeCharIdx].innerText) {
-                letters[activeCharIdx].classList.add('correct');
-                correctChars++;
+            if (activeModeConfig.type === 'time') {
+                liveStat.innerText = activeModeConfig.value;
             } else {
-                letters[activeCharIdx].classList.add('incorrect');
+                liveStat.innerText = `0 / ${activeModeConfig.value}`;
             }
-            activeCharIdx++;
+
+            if (!wordsList || wordsList.length === 0) return;
+
+            const count = activeModeConfig.renderCount || 50;
+            const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
+            
+            container.innerHTML = shuffled.map((w, i) => `
+                <span class="word ${i === 0 ? 'active' : ''}">
+                    ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
+                </span>
+            `).join('');
         }
-    }
-});
 
-function handleScroll(activeWord) {
-    const offset = activeWord.offsetTop;
-    if (offset > 40) {
-        container.style.top = `-${offset}px`;
-    }
-}
+        window.addEventListener('keydown', (e) => {
+            if (results.style.display === 'block' || !activeModeConfig || isStarted && !startTime) return;
+            
+            if(e.key === ' ') e.preventDefault();
 
-function startTimer() {
-    let left = activeModeConfig.value;
-    timerInterval = setInterval(() => {
-        left--;
-        liveStat.innerText = left;
-        if (left <= 0) finish();
-    }, 1000);
-}
+            if (!isStarted && e.key.length === 1) {
+                isStarted = true;
+                startTime = Date.now();
+                if (activeModeConfig.type === 'time') startTimer();
+            }
 
-async function finish() {
-    clearInterval(timerInterval);
-    const durationMinutes = (Date.now() - startTime) / 60000;
-    const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
-    const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
+            const words = container.querySelectorAll('.word');
+            const currentWord = words[activeWordIdx];
+            if (!currentWord) return;
+            const letters = currentWord.querySelectorAll('.letter');
 
-    let saved = false;
-    const { data: { session } } = await _supabase.auth.getSession();
+            if (e.key === 'Backspace') {
+                if (activeCharIdx > 0) {
+                    activeCharIdx--;
+                    letters[activeCharIdx].className = 'letter';
+                }
+            } else if (e.key === ' ') {
+                if (activeCharIdx > 0) {
+                    currentWord.classList.remove('active');
+                    activeWordIdx++;
+                    activeCharIdx = 0;
+                    
+                    if (activeWordIdx < words.length) {
+                        const nextWord = words[activeWordIdx];
+                        nextWord.classList.add('active');
+                        handleScroll(nextWord);
+                    }
+                    
+                    if (activeModeConfig.type === 'words') {
+                        liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
+                        if (activeWordIdx >= activeModeConfig.value) finish();
+                    }
+                }
+            } else if (e.key.length === 1) {
+                if (activeCharIdx < letters.length) {
+                    totalKeystrokes++;
+                    if (e.key === letters[activeCharIdx].innerText) {
+                        letters[activeCharIdx].classList.add('correct');
+                        correctChars++;
+                    } else {
+                        letters[activeCharIdx].classList.add('incorrect');
+                    }
+                    activeCharIdx++;
+                }
+            }
+        });
 
-    if (session) {
-        const { error } = await _supabase
-            .from('scores')
-            .insert([{ 
-                user_id: session.user.id, 
-                wpm: wpm, 
-                accuracy: acc, 
-                mode: activeModeConfig.id
-            }]);
-        if (!error) saved = true;
-    }
+        function handleScroll(activeWord) {
+            const offset = activeWord.offsetTop;
+            if (offset > 40) {
+                container.style.top = `-${offset}px`;
+            }
+        }
 
-    window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
-}
+        function startTimer() {
+            let left = activeModeConfig.value;
+            timerInterval = setInterval(() => {
+                left--;
+                liveStat.innerText = left;
+                if (left <= 0) finish();
+            }, 1000);
+        }
 
-initModes();
-        </script>
+        async function finish() {
+            clearInterval(timerInterval);
+            const durationMinutes = (Date.now() - startTime) / 60000;
+            const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
+            const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
+
+            let saved = false;
+            const { data: { session } } = await _supabase.auth.getSession();
+
+            if (session) {
+                const { error } = await _supabase
+                    .from('scores')
+                    .insert([{ 
+                        user_id: session.user.id, 
+                        wpm: wpm, 
+                        accuracy: acc, 
+                        mode: activeModeConfig.id
+                    }]);
+                if (!error) saved = true;
+            }
+
+            window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
+        }
+
+        initModes();
+    </script>
 </body>
 </html>
