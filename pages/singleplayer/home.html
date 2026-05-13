@@ -110,12 +110,10 @@ const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
 const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
 const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-// Dynamic State Variables
 let availableModes = [];
 let activeModeConfig = null;
 let wordsList = [];
 
-// Game State Variables
 let isStarted = false;
 let activeWordIdx = 0;
 let activeCharIdx = 0;
@@ -128,7 +126,6 @@ const container = document.getElementById('word-container');
 const liveStat = document.getElementById('live-stat');
 const results = document.getElementById('results-screen');
 
-// --- DROPDOWN LOGIC ---
 
 function toggleDropdown() {
     document.getElementById('custom-select').classList.toggle('open');
@@ -195,6 +192,7 @@ async function selectMode(mode) {
             activeEl.classList.add('active');
         }
     }
+}
 
 try {
     const wordPoolUrl = mode.wordpool || '../../data/json/wordlistcommon.json';
