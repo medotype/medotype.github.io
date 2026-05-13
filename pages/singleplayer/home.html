@@ -186,7 +186,7 @@
             }
 
             try {
-                const wordPoolUrl = mode.wordpool || https://raw.githubusercontent.com/medotype/medotype.github.io/main/data/json/wordlistcommon.json';
+                const wordPoolUrl = mode.wordpool || 'https://raw.githubusercontent.com/medotype/medotype.github.io/main/data/json/wordlistcommon.json';
                 const resp = await fetch(wordPoolUrl);
                 if (!resp.ok) {
                     throw new Error(`HTTP error! status: ${resp.status}`);
