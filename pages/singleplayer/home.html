@@ -197,7 +197,7 @@ async function selectMode(mode) {
     }
 
     try {
-        const wordPoolUrl = mode.wordpool || '/data/json/wordlistcommon.json';
+        const wordPoolUrl = mode.wordpool || '../../data/json/wordlistcommon.json';
         const resp = await fetch(wordPoolUrl);
         wordsList = await resp.json();
         resetGame(); 
