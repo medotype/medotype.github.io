@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../data/css/root.css">
-    <script src="data/js/theme.js"></script>
+    <link rel="stylesheet" href="/data/css/root.css">
+    <script src="/data/js/theme.js"></script>
     <style>
         body { background-color: var(--bg); color: var(--text-bright); font-family: var(--font); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         #app { width: 100%; max-width: 850px; text-align: center; padding: 2rem; position: relative; }
@@ -241,7 +241,6 @@ function resetGame() {
 window.addEventListener('keydown', (e) => {
     if (results.style.display === 'block' || !activeModeConfig || isStarted && !startTime) return;
     
-    // Prevent scrolling with space
     if(e.key === ' ') e.preventDefault();
 
     if (!isStarted && e.key.length === 1) {
