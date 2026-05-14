@@ -183,7 +183,6 @@
 
     async function initModes() {
         try {
-            // Adjust path if this file is deeper than /pages/
             const response = await fetch('../data/json/modelist.json');
             if(!response.ok) throw new Error("JSON not found");
             availableModes = await response.json();
@@ -287,7 +286,7 @@
 
         pageData.forEach((s, i) => {
             const absoluteRank = startIndex + i + 1;
-            const nameColor = absoluteRank === 1 ? 'var(--success)' : 'inherit';
+            const nameColor = absoluteRank === 1 ? 'var(--firstplace)' : 'inherit';
 
             body.innerHTML += `
                 <tr>
