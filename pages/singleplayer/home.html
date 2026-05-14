@@ -242,7 +242,7 @@ try {
         }
 
         window.addEventListener('keydown', (e) => {
-            if (results.style.display === 'block' || !activeModeConfig || isStarted && !startTime) return;
+            if (results.style.display === 'block' || !activeModeConfig || (isStarted && !startTime)) return;
             
             if(e.key === ' ') e.preventDefault();
 
@@ -261,9 +261,29 @@ try {
                 if (activeCharIdx > 0) {
                     activeCharIdx--;
                     letters[activeCharIdx].className = 'letter';
+                } else if (activeWordIdx > 0) {
+                    currentWord.classList.remove('active');
+                    activeWordIdx--;
+                    const prevWord = words[activeWordIdx];
+                    prevWord.classList.add('active');
+                    
+                    const prevLetters = prevWord.querySelectorAll('.letter');
+                    activeCharIdx = prevLetters.length;
+                    
+                    handleScroll(prevWord);
+                    
+                    if (activeModeConfig.type === 'words') {
+                        liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
+                    }
                 }
             } else if (e.key === ' ') {
                 if (activeCharIdx > 0) {
+                    // Logic for completing a word and moving to next
+                    if (activeModeConfig.type === 'words' && activeWordIdx + 1 >= activeModeConfig.value) {
+                        finish(); // Finish if they hit space on the last word anyway
+                        return;
+                    }
+
                     currentWord.classList.remove('active');
                     activeWordIdx++;
                     activeCharIdx = 0;
@@ -276,7 +296,6 @@ try {
                     
                     if (activeModeConfig.type === 'words') {
                         liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
-                        if (activeWordIdx >= activeModeConfig.value) finish();
                     }
                 }
             } else if (e.key.length === 1) {
@@ -289,6 +308,12 @@ try {
                         letters[activeCharIdx].classList.add('incorrect');
                     }
                     activeCharIdx++;
+
+                    if (activeModeConfig.type === 'words' && 
+                        activeWordIdx === activeModeConfig.value - 1 && 
+                        activeCharIdx === letters.length) {
+                        finish();
+                    }
                 }
             }
         });
