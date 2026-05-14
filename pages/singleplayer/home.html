@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Singleplayer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../data/css/root.css">
+    <script src="../../data/js/theme.js"></script>
+    <style>
+        body { background-color: var(--bg); color: var(--text-bright); font-family: var(--font); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #app { width: 100%; max-width: 850px; text-align: center; padding: 2rem; position: relative; }
+        
+        #nav { margin-bottom: 3rem; display: inline-flex; background: var(--card-bg); padding: 6px; border-radius: 12px; gap: 5px; }
+        .mode-btn { background: transparent; border: none; color: var(--text-faded); font-family: var(--font); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
+        .mode-btn:hover { color: var(--text-bright); }
+        .mode-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        
+        #live-stat { font-size: 1.2rem; font-weight: 300; color: var(--text-faded); margin-bottom: 1.5rem; height: 1.5rem; }
+        #typing-viewport { height: 90px; overflow: hidden; position: relative; margin-bottom: 2rem; }
+        #word-container { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; position: relative; top: 0; transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .word { font-size: 2rem; font-weight: 400; color: var(--text-faded); letter-spacing: -0.02em; position: relative; }
+        .word.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; opacity: 0.5; }
+        .letter.correct { color: var(--text-bright); }
+        .letter.incorrect { color: var(--error); border-bottom: 2px solid var(--error); }
+        
+        #results-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card-bg); padding: 3rem; border-radius: 24px; width: 100%; max-width: 400px; display: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 10; }
+        .stat-val { font-size: 4rem; font-weight: 600; color: var(--accent); margin: 0; }
+        .stat-label { color: var(--text-faded); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em; }
+        
+        #restart-btn { margin-top: 2rem; background: var(--accent); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-family: var(--font); font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
+        #restart-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .hidden { visibility: hidden; opacity: 0; }
+
+        .mode-settings-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .mode-group {
+            display: flex;
+            background: var(--card-bg);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 2px;
+        }
+
+        .mode-item {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-faded);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-item:hover {
+            color: var(--text-bright);
+        }
+
+        .mode-item.active {
+            color: var(--accent);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .mode-item.blitz-active {
+            color: #ff4500;
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
+        }
+
+        .mode-item i {
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div class="mode-settings-container">
+            <div class="mode-group" id="mode-nav"></div>
+        </div>
+        <div id="live-stat">Loading modes...</div>
+
+        <div id="typing-viewport">
+            <div id="word-container"></div>
+        </div>
+
+        <div id="results-screen">
+            <p class="stat-label">Words Per Minute</p>
+            <h1 class="stat-val" id="wpm-display">0</h1>
+            <p class="stat-label" id="acc-display" style="margin-top: 10px;">Acc: 0%</p>
+            <button id="restart-btn" onclick="resetGame()">Restart</button>
+        </div>
+    </div>
+
+    <script>
+        const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
+        const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        let availableModes = [];
+        let activeModeConfig = null;
+        let wordsList = [];
+
+        let isStarted = false;
+        let activeWordIdx = 0;
+        let activeCharIdx = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let correctChars = 0;
+        let totalKeystrokes = 0;
+
+        const container = document.getElementById('word-container');
+        const liveStat = document.getElementById('live-stat');
+        const results = document.getElementById('results-screen');
+
+        function toggleDropdown() {
+            document.getElementById('custom-select').classList.toggle('open');
+        }
+
+        window.addEventListener('click', function(e) {
+            const select = document.getElementById('custom-select');
+            if (select && !select.contains(e.target)) {
+                select.classList.remove('open');
+            }
+        });
+
+        async function initModes() {
+            try {
+                const response = await fetch('../../data/json/modelist.json');
+                if(!response.ok) throw new Error("File not found");
+                availableModes = await response.json();
+                
+                buildNav();
+                
+                if (availableModes.length > 0) {
+                    selectMode(availableModes[0]);
+                }
+            } catch (e) {
+                console.error(e);
+                liveStat.innerText = "Error loading modes";
+            }
+        }
+
+        function buildNav() {
+            const nav = document.getElementById('mode-nav');
+            nav.innerHTML = '';
+            
+            availableModes.forEach(mode => {
+                const div = document.createElement('div');
+                div.className = 'mode-item';
+                div.id = `mode-${mode.id}`;
+                
+                let iconClass = mode.type === 'time' ? 'fa-clock' : 'fa-font';
+                if (mode.id === 'blitz') iconClass = 'fa-fire';
+                
+                div.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mode.label}`;
+                div.onclick = () => selectMode(mode);
+                nav.appendChild(div);
+            });
+        }
+
+        async function selectMode(mode) {
+            activeModeConfig = mode;
+
+            document.querySelectorAll('.mode-item').forEach(el => {
+                el.classList.remove('active', 'blitz-active');
+            });
+
+            const activeEl = document.getElementById(`mode-${mode.id}`);
+            if (activeEl) {
+                if (mode.id === 'blitz') {
+                    activeEl.classList.add('blitz-active');
+                } else {
+                    activeEl.classList.add('active');
+                }
+            }
+
+try {
+                let rawPath = mode.wordpool || '/data/json/wordlistcommon.json';
+                
+                let safeUrl = rawPath;
+                if (rawPath.includes('data/')) {
+                    safeUrl = '/data/' + rawPath.split('data/')[1];
+                } else if (!rawPath.startsWith('/') && !rawPath.startsWith('http')) {
+                    safeUrl = '/' + rawPath;
+                }
+
+                const resp = await fetch(safeUrl);
+                if (!resp.ok) {
+                    throw new Error(`HTTP error! status: ${resp.status}`);
+                }
+                wordsList = await resp.json();
+                if (Array.isArray(wordsList) && wordsList.length > 0) {
+                    resetGame(); 
+                } else {
+                    throw new Error("Wordlist is empty or not an array");
+                }
+            } catch (err) {
+                console.error("Failed to load words:", err);
+                liveStat.innerText = "Error: ur shitty fix didnt fucking work ";
+            }
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            isStarted = false;
+            activeWordIdx = 0;
+            activeCharIdx = 0;
+            correctChars = 0;
+            totalKeystrokes = 0;
+            startTime = null;
+            container.style.top = "0px";
+            results.style.display = 'none';
+            container.classList.remove('hidden');
+            
+            if (activeModeConfig.type === 'time') {
+                liveStat.innerText = activeModeConfig.value;
+            } else {
+                liveStat.innerText = `0 / ${activeModeConfig.value}`;
+            }
+
+            if (!wordsList || wordsList.length === 0) return;
+
+            const count = activeModeConfig.renderCount || 50;
+            const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
+            
+            container.innerHTML = shuffled.map((w, i) => `
+                <span class="word ${i === 0 ? 'active' : ''}">
+                    ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
+                </span>
+            `).join('');
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (results.style.display === 'block' || !activeModeConfig || (isStarted && !startTime)) return;
+            
+            if(e.key === ' ') e.preventDefault();
+
+            if (!isStarted && e.key.length === 1) {
+                isStarted = true;
+                startTime = Date.now();
+                if (activeModeConfig.type === 'time') startTimer();
+            }
+
+            const words = container.querySelectorAll('.word');
+            const currentWord = words[activeWordIdx];
+            if (!currentWord) return;
+            const letters = currentWord.querySelectorAll('.letter');
+
+            if (e.key === 'Backspace') {
+                if (activeCharIdx > 0) {
+                    activeCharIdx--;
+                    letters[activeCharIdx].className = 'letter';
+                } else if (activeWordIdx > 0) {
+                    currentWord.classList.remove('active');
+                    activeWordIdx--;
+                    const prevWord = words[activeWordIdx];
+                    prevWord.classList.add('active');
+                    
+                    const prevLetters = prevWord.querySelectorAll('.letter');
+                    activeCharIdx = prevLetters.length;
+                    
+                    handleScroll(prevWord);
+                    
+                    if (activeModeConfig.type === 'words') {
+                        liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
+                    }
+                }
+            } else if (e.key === ' ') {
+                if (activeCharIdx > 0) {
+                    // Logic for completing a word and moving to next
+                    if (activeModeConfig.type === 'words' && activeWordIdx + 1 >= activeModeConfig.value) {
+                        finish(); // Finish if they hit space on the last word anyway
+                        return;
+                    }
+
+                    currentWord.classList.remove('active');
+                    activeWordIdx++;
+                    activeCharIdx = 0;
+                    
+                    if (activeWordIdx < words.length) {
+                        const nextWord = words[activeWordIdx];
+                        nextWord.classList.add('active');
+                        handleScroll(nextWord);
+                    }
+                    
+                    if (activeModeConfig.type === 'words') {
+                        liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
+                    }
+                }
+            } else if (e.key.length === 1) {
+                if (activeCharIdx < letters.length) {
+                    totalKeystrokes++;
+                    if (e.key === letters[activeCharIdx].innerText) {
+                        letters[activeCharIdx].classList.add('correct');
+                        correctChars++;
+                    } else {
+                        letters[activeCharIdx].classList.add('incorrect');
+                    }
+                    activeCharIdx++;
+
+                    if (activeModeConfig.type === 'words' && 
+                        activeWordIdx === activeModeConfig.value - 1 && 
+                        activeCharIdx === letters.length) {
+                        finish();
+                    }
+                }
+            }
+        });
+
+        function handleScroll(activeWord) {
+            const offset = activeWord.offsetTop;
+            if (offset > 40) {
+                container.style.top = `-${offset}px`;
+            }
+        }
+
+        function startTimer() {
+            let left = activeModeConfig.value;
+            timerInterval = setInterval(() => {
+                left--;
+                liveStat.innerText = left;
+                if (left <= 0) finish();
+            }, 1000);
+        }
+
+        async function finish() {
+            clearInterval(timerInterval);
+            const durationMinutes = (Date.now() - startTime) / 60000;
+            const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
+            const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
+
+            let saved = false;
+            const { data: { session } } = await _supabase.auth.getSession();
+
+            if (session) {
+                const { error } = await _supabase
+                    .from('scores')
+                    .insert([{ 
+                        user_id: session.user.id, 
+                        wpm: wpm, 
+                        accuracy: acc, 
+                        mode: activeModeConfig.id
+                    }]);
+                if (!error) saved = true;
+            }
+
+            window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
+        }
+
+        initModes();
+    </script>
+</body>
+</html>

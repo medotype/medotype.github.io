@@ -4,334 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MeDoType | Home</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../data/css/root.css">
-    <script src="data/js/theme.js"></script>
+    <script src="../data/js/theme.js"></script>
     <style>
-        body { background-color: var(--bg); color: var(--text-bright); font-family: var(--font); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #app { width: 100%; max-width: 850px; text-align: center; padding: 2rem; position: relative; }
-        
-        #nav { margin-bottom: 3rem; display: inline-flex; background: var(--card-bg); padding: 6px; border-radius: 12px; gap: 5px; }
-        .mode-btn { background: transparent; border: none; color: var(--text-faded); font-family: var(--font); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
-        .mode-btn:hover { color: var(--text-bright); }
-        .mode-btn.active { background: var(--bg); color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        
-        #live-stat { font-size: 1.2rem; font-weight: 300; color: var(--text-faded); margin-bottom: 1.5rem; height: 1.5rem; }
-        #typing-viewport { height: 90px; overflow: hidden; position: relative; margin-bottom: 2rem; }
-        #word-container { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; position: relative; top: 0; transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        .word { font-size: 2rem; font-weight: 400; color: var(--text-faded); letter-spacing: -0.02em; position: relative; }
-        .word.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; opacity: 0.5; }
-        .letter.correct { color: var(--text-bright); }
-        .letter.incorrect { color: var(--error); border-bottom: 2px solid var(--error); }
-        
-        #results-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card-bg); padding: 3rem; border-radius: 24px; width: 100%; max-width: 400px; display: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 10; }
-        .stat-val { font-size: 4rem; font-weight: 600; color: var(--accent); margin: 0; }
-        .stat-label { color: var(--text-faded); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em; }
-        
-        #restart-btn { margin-top: 2rem; background: var(--accent); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-family: var(--font); font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
-        #restart-btn:hover { opacity: 0.9; transform: translateY(-2px); }
-        .hidden { visibility: hidden; opacity: 0; }
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-bright); 
+            font-family: var(--font); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+        }
 
-.mode-settings-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 3rem;
-    animation: fadeIn 0.5s ease;
-}
+        #menu-container {
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem;
+            text-align: center;
+        }
 
-.mode-group {
-    display: flex;
-    background: var(--card-bg);
-    padding: 4px;
-    border-radius: 10px;
-    gap: 2px;
-}
+        .header-meta {
+            color: var(--text-faded);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.8s ease;
+        }
 
-.mode-item {
-    padding: 8px 16px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-faded);
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
 
-.mode-item:hover {
-    color: var(--text-bright);
-}
+        .mode-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 50px 25px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
 
-.mode-item.active {
-    color: var(--accent);
-    background: rgba(255, 255, 255, 0.03);
-}
+        /* Hover States for Active Cards */
+        .mode-card:not(.locked):hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--accent);
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
 
-/* Specific Blitz Styling */
-.mode-item.blitz-active {
-    color: #ff4500;
-    text-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
-}
+        /* Card Elements */
+        .mode-card i {
+            font-size: 2.2rem;
+            color: var(--text-faded);
+            margin-bottom: 1.5rem;
+            transition: 0.3s;
+        }
 
-.mode-item i {
-    font-size: 0.8rem;
-}
-        
+        .mode-card h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-bright);
+            letter-spacing: -0.01em;
+        }
+
+        .mode-card p {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: var(--text-faded);
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        /* Hover Icon Interaction */
+        .mode-card:not(.locked):hover i {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        /* Locked State */
+        .mode-card.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .mode-card.locked i {
+            font-size: 1.8rem;
+        }
+
+        /* Decorative Bottom Bar on Hover */
+        .mode-card::after {
+            content: '';
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: 0.3s ease;
+            opacity: 0;
+        }
+
+        .mode-card:not(.locked):hover::after {
+            width: 40px;
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 850px) {
+            .modes-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            .mode-card {
+                padding: 30px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div id="app">
-<div class="mode-settings-container">
-    <div class="mode-group" id="mode-nav">
-        </div>
-</div>
-        <div id="live-stat">Loading modes...</div>
+    <div id="menu-container">
+        <div class="header-meta">Select Gamemode</div>
+        
+        <div class="modes-grid">
+            <a href="singleplayer/home.html" class="mode-card">
+                <i class="fa-solid fa-user"></i>
+                <h2>Singleplayer</h2>
+                <p>Standard typing test with customizable modes and personal bests.</p>
+            </a>
 
-        <div id="typing-viewport">
-            <div id="word-container"></div>
-        </div>
+            <div class="mode-card locked">
+                <i class="fa-solid fa-trophy"></i>
+                <h2>Ranked</h2>
+                <p>Competitive matchmaking. Climb the ranks against others.</p>
+            </div>
 
-        <div id="results-screen">
-            <p class="stat-label">Words Per Minute</p>
-            <h1 class="stat-val" id="wpm-display">0</h1>
-            <p class="stat-label" id="acc-display" style="margin-top: 10px;">Acc: 0%</p>
-            <button id="restart-btn" onclick="resetGame()">Restart</button>
+            <div class="mode-card locked">
+                <i class="fa-solid fa-bullseye"></i>
+                <h2>Practice</h2>
+                <p>Warm up skills before playing. Does not save to leaderboards or rank.</p>
+            </div>
         </div>
     </div>
 
-    <script>
-const SB_URL = 'https://tzaowqeofmwfnprrfwat.supabase.co';
-const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
-const _supabase = supabase.createClient(SB_URL, SB_KEY);
-
-// Dynamic State Variables
-let availableModes = [];
-let activeModeConfig = null;
-let wordsList = [];
-
-// Game State Variables
-let isStarted = false;
-let activeWordIdx = 0;
-let activeCharIdx = 0;
-let startTime = null;
-let timerInterval = null;
-let correctChars = 0;
-let totalKeystrokes = 0;
-
-const container = document.getElementById('word-container');
-const liveStat = document.getElementById('live-stat');
-const results = document.getElementById('results-screen');
-
-// --- DROPDOWN LOGIC ---
-
-function toggleDropdown() {
-    document.getElementById('custom-select').classList.toggle('open');
-}
-
-window.addEventListener('click', function(e) {
-    const select = document.getElementById('custom-select');
-    if (!select.contains(e.target)) {
-        select.classList.remove('open');
-    }
-});
-
-async function initModes() {
-    try {
-        // Fetch the list of modes
-        const response = await fetch('../data/json/modelist.json');
-        if(!response.ok) throw new Error("File not found");
-        availableModes = await response.json();
-        
-        buildNav();
-        
-        // Auto-select the first mode in the list
-        if (availableModes.length > 0) {
-            selectMode(availableModes[0]);
-        }
-    } catch (e) {
-        console.error(e);
-        document.getElementById('selected-label').innerText = "Error loading modes";
-    }
-}
-
-function buildNav() {
-    const nav = document.getElementById('mode-nav');
-    nav.innerHTML = '';
-    
-    availableModes.forEach(mode => {
-        const div = document.createElement('div');
-        div.className = 'mode-item';
-        div.id = `mode-${mode.id}`;
-        
-        // Icon Logic
-        let iconClass = mode.type === 'time' ? 'fa-clock' : 'fa-font';
-        if (mode.id === 'blitz') iconClass = 'fa-fire';
-        
-        div.innerHTML = `<i class="fa-solid ${iconClass}"></i> ${mode.label}`;
-        
-        div.onclick = () => selectMode(mode);
-        nav.appendChild(div);
-    });
-}
-
-async function selectMode(mode) {
-    activeModeConfig = mode;
-
-    document.querySelectorAll('.mode-item').forEach(el => {
-        el.classList.remove('active', 'blitz-active');
-    });
-
-    const activeEl = document.getElementById(`mode-${mode.id}`);
-    if (activeEl) {
-        if (mode.id === 'blitz') {
-            activeEl.classList.add('blitz-active');
-        } else {
-            activeEl.classList.add('active');
-        }
-    }
-
-    try {
-        const wordPoolUrl = mode.wordpool || '../data/json/wordlistcommon.json';
-        const resp = await fetch(wordPoolUrl);
-        wordsList = await resp.json();
-        resetGame(); 
-    } catch (err) {
-        liveStat.innerText = "Error loading mode";
-    }
-}
-
-// --- GAME LOGIC ---
-
-function resetGame() {
-    clearInterval(timerInterval);
-    isStarted = false;
-    activeWordIdx = 0;
-    activeCharIdx = 0;
-    correctChars = 0;
-    totalKeystrokes = 0;
-    startTime = null;
-    container.style.top = "0px";
-    results.style.display = 'none';
-    container.classList.remove('hidden');
-    
-    if (activeModeConfig.type === 'time') {
-        liveStat.innerText = activeModeConfig.value;
-    } else {
-        liveStat.innerText = `0 / ${activeModeConfig.value}`;
-    }
-
-    if (!wordsList || wordsList.length === 0) return;
-
-    const count = activeModeConfig.renderCount || 50;
-    const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
-    
-    container.innerHTML = shuffled.map((w, i) => `
-        <span class="word ${i === 0 ? 'active' : ''}">
-            ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
-        </span>
-    `).join('');
-}
-
-window.addEventListener('keydown', (e) => {
-    if (results.style.display === 'block' || !activeModeConfig || isStarted && !startTime) return;
-    
-    // Prevent scrolling with space
-    if(e.key === ' ') e.preventDefault();
-
-    if (!isStarted && e.key.length === 1) {
-        isStarted = true;
-        startTime = Date.now();
-        if (activeModeConfig.type === 'time') startTimer();
-    }
-
-    const words = container.querySelectorAll('.word');
-    const currentWord = words[activeWordIdx];
-    if (!currentWord) return;
-    const letters = currentWord.querySelectorAll('.letter');
-
-    if (e.key === 'Backspace') {
-        if (activeCharIdx > 0) {
-            activeCharIdx--;
-            letters[activeCharIdx].className = 'letter';
-        }
-    } else if (e.key === ' ') {
-        if (activeCharIdx > 0) {
-            currentWord.classList.remove('active');
-            activeWordIdx++;
-            activeCharIdx = 0;
-            
-            if (activeWordIdx < words.length) {
-                const nextWord = words[activeWordIdx];
-                nextWord.classList.add('active');
-                handleScroll(nextWord);
-            }
-            
-            if (activeModeConfig.type === 'words') {
-                liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
-                if (activeWordIdx >= activeModeConfig.value) finish();
-            }
-        }
-    } else if (e.key.length === 1) {
-        if (activeCharIdx < letters.length) {
-            totalKeystrokes++;
-            if (e.key === letters[activeCharIdx].innerText) {
-                letters[activeCharIdx].classList.add('correct');
-                correctChars++;
-            } else {
-                letters[activeCharIdx].classList.add('incorrect');
-            }
-            activeCharIdx++;
-        }
-    }
-});
-
-function handleScroll(activeWord) {
-    const offset = activeWord.offsetTop;
-    if (offset > 40) {
-        container.style.top = `-${offset}px`;
-    }
-}
-
-function startTimer() {
-    let left = activeModeConfig.value;
-    timerInterval = setInterval(() => {
-        left--;
-        liveStat.innerText = left;
-        if (left <= 0) finish();
-    }, 1000);
-}
-
-async function finish() {
-    clearInterval(timerInterval);
-    const durationMinutes = (Date.now() - startTime) / 60000;
-    const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
-    const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
-
-    let saved = false;
-    const { data: { session } } = await _supabase.auth.getSession();
-
-    if (session) {
-        const { error } = await _supabase
-            .from('scores')
-            .insert([{ 
-                user_id: session.user.id, 
-                wpm: wpm, 
-                accuracy: acc, 
-                mode: activeModeConfig.id
-            }]);
-        if (!error) saved = true;
-    }
-
-    window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
-}
-
-initModes();
-        </script>
 </body>
 </html>

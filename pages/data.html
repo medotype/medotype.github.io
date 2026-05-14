@@ -6,7 +6,7 @@
     <title>MeDoType | Analytics</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-            <link rel="stylesheet" href="../data/css/root.css">
+    <link rel="stylesheet" href="../data/css/root.css">
     <style>
         body {
             background-color: var(--bg);
@@ -34,6 +34,7 @@
             padding: 6px;
             border-radius: 12px;
             gap: 5px;
+            border: 1px solid rgba(255,255,255,0.03);
         }
 
         .mode-btn {
@@ -96,6 +97,7 @@
             border-radius: 20px;
             padding: 1.5rem;
             text-align: left;
+            border: 1px solid rgba(255,255,255,0.03);
         }
 
         table {
@@ -118,15 +120,11 @@
             border-bottom: 1px solid rgba(255,255,255,0.02);
         }
 
-        .loading-overlay {
-            color: var(--text-faded);
-            margin-top: 50px;
-        }
-
         .no-data {
             padding: 40px;
             text-align: center;
             color: var(--text-faded);
+            font-style: italic;
         }
     </style>
 </head>
@@ -135,10 +133,8 @@
     <div class="container">
         <h1 style="margin-bottom: 2rem; font-weight: 600;">Personal Analytics</h1>
 
-        <div class="mode-nav">
-            <button class="mode-btn active" onclick="fetchAnalytics('time_15', this)">15s Timed</button>
-            <button class="mode-btn" onclick="fetchAnalytics('words_30', this)">30 Words</button>
-        </div>
+        <div class="mode-nav" id="mode-nav">
+            </div>
 
         <div id="stats-display">
             <div class="stats-grid">
@@ -169,8 +165,7 @@
                             <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody id="history-body">
-                        </tbody>
+                    <tbody id="history-body"></tbody>
                 </table>
                 <div id="no-data-msg" class="no-data" style="display: none;">No tests completed in this mode yet.</div>
             </div>
@@ -182,7 +177,40 @@
         const SB_KEY = 'sb_publishable_Sr33ux9FL6QZaJlfhjoqFw_tIwQhSbx';
         const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        async function fetchAnalytics(mode, btnElement) {
+        let availableModes = [];
+
+        async function initModes() {
+            try {
+                const response = await fetch('../data/json/modelist.json');
+                if(!response.ok) throw new Error("Could not fetch modes");
+                availableModes = await response.json();
+                
+                buildNav();
+                
+                if (availableModes.length > 0) {
+                    fetchAnalytics(availableModes[0].id);
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('no-data-msg').innerText = "Error loading game modes.";
+                document.getElementById('no-data-msg').style.display = 'block';
+            }
+        }
+
+        function buildNav() {
+            const nav = document.getElementById('mode-nav');
+            nav.innerHTML = '';
+            
+            availableModes.forEach((mode, index) => {
+                const btn = document.createElement('button');
+                btn.className = index === 0 ? 'mode-btn active' : 'mode-btn';
+                btn.innerText = mode.label;
+                btn.onclick = () => fetchAnalytics(mode.id, btn);
+                nav.appendChild(btn);
+            });
+        }
+
+        async function fetchAnalytics(modeId, btnElement) {
             // UI Toggle
             if (btnElement) {
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -191,7 +219,8 @@
 
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) {
-                alert("Please log in to see your analytics.");
+                document.getElementById('no-data-msg').innerText = "Please log in to see your analytics.";
+                document.getElementById('no-data-msg').style.display = 'block';
                 return;
             }
 
@@ -200,7 +229,7 @@
                 .from('scores')
                 .select('*')
                 .eq('user_id', session.user.id)
-                .eq('mode', mode)
+                .eq('mode', modeId)
                 .order('created_at', { ascending: false });
 
             if (error) {
@@ -214,6 +243,7 @@
         function updateUI(data) {
             const historyBody = document.getElementById('history-body');
             const noDataMsg = document.getElementById('no-data-msg');
+            const table = document.getElementById('history-table');
             historyBody.innerHTML = '';
 
             if (!data || data.length === 0) {
@@ -221,15 +251,15 @@
                 document.getElementById('avg-wpm').innerText = '-';
                 document.getElementById('avg-acc').innerText = '-';
                 noDataMsg.style.display = 'block';
+                table.style.display = 'none';
                 return;
             }
 
             noDataMsg.style.display = 'none';
+            table.style.display = 'table';
 
-            // Calculate Best
             const best = Math.max(...data.map(s => s.wpm));
             
-            // Calculate Averages (Last 10)
             const recent = data.slice(0, 10);
             const avgWpm = Math.round(recent.reduce((acc, curr) => acc + curr.wpm, 0) / recent.length);
             const avgAcc = Math.round(recent.reduce((acc, curr) => acc + curr.accuracy, 0) / recent.length);
@@ -239,7 +269,6 @@
             document.getElementById('avg-wpm').innerText = avgWpm;
             document.getElementById('avg-acc').innerText = avgAcc + '%';
 
-            // Build Table
             data.forEach(score => {
                 const date = new Date(score.created_at).toLocaleDateString();
                 const row = `
@@ -253,7 +282,8 @@
             });
         }
 
-        fetchAnalytics('time_15');
+        // Initialize on load
+        initModes();
     </script>
 </body>
 </html>
