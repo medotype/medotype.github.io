@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../data/css/root.css">
     <script src="data/js/theme.js"></script>
     <style>
-
         body { 
             background-color: var(--bg); 
             color: var(--text-bright); 
@@ -56,6 +55,15 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* Styles for Locked Cards */
+        .mode-card.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(1);
+            pointer-events: none; /* This prevents clicking and hover effects */
         }
 
         .mode-card::after {
@@ -89,20 +97,19 @@
             line-height: 1.4;
         }
 
-        .mode-card:hover {
+        /* Only apply hover effects to cards that are NOT locked */
+        .mode-card:not(.locked):hover {
             background: rgba(255, 255, 255, 0.03);
             border-color: rgba(255, 255, 255, 0.15);
             transform: translateY(-4px);
         }
 
-        .mode-card:hover i {
+        .mode-card:not(.locked):hover i {
             color: var(--text-bright);
             transform: scale(1.1);
         }
 
         .single:hover::after { height: 4px; background: #3b82f6; }
-        .ranked:hover::after { height: 4px; background: #ef4444; }
-        .practice:hover::after { height: 4px; background: #10b981; }
 
         @media (max-width: 768px) {
             .modes-grid {
@@ -126,17 +133,17 @@
                 <p>Standard typing test. Saves to the singleplayer leaderboard.</p>
             </a>
 
-            <a href="multiplayer/home.html" class="mode-card ranked">
-                <i class="fa-solid fa-trophy"></i>
+            <div class="mode-card ranked locked">
+                <i class="fa-solid fa-lock"></i>
                 <h2>Ranked</h2>
-                <p>Competitive matches against other players. Gives you ranks based on performance.</p>
-            </a>
+                <p>Competitive matches. (Coming Soon)</p>
+            </div>
 
-            <a href="practice/home.html" class="mode-card practice">
-                <i class="fa-solid fa-dumbbell"></i>
+            <div class="mode-card practice locked">
+                <i class="fa-solid fa-lock"></i>
                 <h2>Practice</h2>
-                <p>Warm up without affecting your rank or stats.</p>
-            </a>
+                <p>Warm up. (Locked)</p>
+            </div>
         </div>
     </div>
 
