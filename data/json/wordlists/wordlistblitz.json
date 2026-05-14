@@ -1,0 +1,42 @@
+[
+    {
+        "id": "time_15",
+        "label": "15s Timed",
+        "type": "time",
+        "value": 15,
+        "wordpool": "../data/json/wordlistcommon.json",
+        "renderCount": 150
+    },
+    {
+        "id": "time_60",
+        "label": "60s Timed",
+        "type": "time",
+        "value": 60,
+        "wordpool": "../data/json/wordlistcommon.json",
+        "renderCount": 250
+    },
+    {
+        "id": "words_15",
+        "label": "15 Words",
+        "type": "words",
+        "value": 15,
+        "wordpool": "../data/json/wordlistcommon.json",
+        "renderCount": 15
+    },
+    {
+        "id": "words_30",
+        "label": "30 Words",
+        "type": "words",
+        "value": 30,
+        "wordpool": "../data/json/wordlistcommon.json",
+        "renderCount": 30
+    },
+    {
+        "id": "blitz",
+        "label": "Blitz",
+        "type": "time",
+        "value": 5,
+        "wordpool": "../data/json/wordlistcommon.json",
+        "renderCount": 100
+    }
+]
