@@ -185,9 +185,17 @@
                 }
             }
 
-            try {
-                const wordPoolUrl = mode.wordpool || '../../../data/json/wordlistcommon.json';
-                const resp = await fetch(wordPoolUrl);
+try {
+                let rawPath = mode.wordpool || '/data/json/wordlistcommon.json';
+                
+                let safeUrl = rawPath;
+                if (rawPath.includes('data/')) {
+                    safeUrl = '/data/' + rawPath.split('data/')[1];
+                } else if (!rawPath.startsWith('/') && !rawPath.startsWith('http')) {
+                    safeUrl = '/' + rawPath;
+                }
+
+                const resp = await fetch(safeUrl);
                 if (!resp.ok) {
                     throw new Error(`HTTP error! status: ${resp.status}`);
                 }
@@ -199,7 +207,7 @@
                 }
             } catch (err) {
                 console.error("Failed to load words:", err);
-                liveStat.innerText = "Error: JSON path or format incorrect";
+                liveStat.innerText = "Error: ur shitty fix didnt fucking work ";
             }
         }
 
