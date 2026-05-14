@@ -1,14 +1,31 @@
-<h1>MeDoType</H1>
-Welcome to the Github repository for MeDoType! At the start of this project, it was just a stupid monkeytype clone, but now its becoming
-a whole alternative to it!
-<h2>To Do</H2>
-<div>
-- Make daily special modes system
-<div>
-- Make settings
-<div>
-- Make themes and keyboard sounds
-<div>
-- Make practice mode
-<div>
-- Make ranked mode
+
+# MeDoType
+
+Simplistic typing game.
+
+
+## Features
+
+- Five different tests for the current gamemode
+- Automatic leaderboard
+- Account system
+- User searching
+
+
+## To do
+- Ranked gamemode
+- Practice gamemode
+- Themes
+- Keyboard sounds
+- Daily modes system
+
+## Contributing
+
+Contributions are always welcome!
+
+See `contributing.md` for ways to get started.
+
+## Links
+
+https://medotype.wasmer.app/ - Stable branch
+https://medotype.github.io/ - Development branch
