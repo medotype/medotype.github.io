@@ -28,4 +28,6 @@ See `contributing.md` for ways to get started.
 ## Links
 
 https://medotype.wasmer.app/ - Stable branch
+<div>
 https://medotype.github.io/ - Development branch
+</div>
