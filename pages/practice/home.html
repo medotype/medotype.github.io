@@ -150,7 +150,6 @@
                 }
             } else if (e.key === ' ') {
                 if (activeCharIdx > 0) {
-                    // Check Combo
                     if (currentWordPerfect && activeCharIdx === letters.length) {
                         combo++;
                         bumpCombo();
@@ -187,7 +186,6 @@
                     }
                     activeCharIdx++;
                 } else {
-                    // Typing past the word length also breaks perfection
                     currentWordPerfect = false;
                 }
             }
