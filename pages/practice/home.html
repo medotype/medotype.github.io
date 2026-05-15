@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeDoType | Practice</title>
+    <title>MeDoType | Practice Combo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,9 +13,13 @@
         body { background-color: var(--bg); color: var(--text-bright); font-family: var(--font); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         #app { width: 100%; max-width: 850px; text-align: center; padding: 2rem; position: relative; }
         
-        #live-stat { font-size: 1.2rem; font-weight: 300; color: var(--text-faded); margin-bottom: 1.5rem; height: 1.5rem; display: flex; justify-content: center; gap: 20px; }
-        .stat-item { display: flex; gap: 8px; align-items: center; }
+        #live-stat { font-size: 1.2rem; font-weight: 300; color: var(--text-faded); margin-bottom: 1.5rem; height: 1.5rem; display: flex; justify-content: center; gap: 30px; }
+        .stat-item { display: flex; gap: 8px; align-items: center; transition: 0.2s; }
         .stat-item b { color: var(--accent); }
+        
+        /* Combo Styling */
+        #combo-container { color: #ffd700; font-weight: 600; text-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+        .bump { transform: scale(1.2); }
 
         #typing-viewport { height: 90px; overflow: hidden; position: relative; margin-bottom: 2rem; }
         #word-container { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; position: relative; top: 0; transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -34,6 +38,7 @@
     <div id="app">
         <div id="live-stat">
             <div class="stat-item"><i class="fa-solid fa-bolt"></i> <span id="wpm-val">0</span> WPM</div>
+            <div class="stat-item" id="combo-container"><i class="fa-solid fa-fire"></i> <span id="combo-val">0</span> combo</div>
             <div class="stat-item"><i class="fa-solid fa-font"></i> <span id="word-val">0</span> words</div>
         </div>
 
@@ -53,14 +58,19 @@
         let timerInterval = null;
         let correctChars = 0;
         let wordsCompleted = 0;
+        
+        // Combo Logic Variables
+        let combo = 0;
+        let currentWordPerfect = true;
 
         const container = document.getElementById('word-container');
         const wpmDisplay = document.getElementById('wpm-val');
         const wordDisplay = document.getElementById('word-val');
+        const comboDisplay = document.getElementById('combo-val');
+        const comboContainer = document.getElementById('combo-container');
 
         async function initPractice() {
             try {
-                // Fetching the common wordlist as default for practice
                 const resp = await fetch('/data/json/wordlistcommon.json');
                 if (!resp.ok) throw new Error("Wordlist not found");
                 wordsList = await resp.json();
@@ -73,7 +83,7 @@
 
         function generateWords(count = 100) {
             const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
-            return shuffled.map((w, i) => `
+            return shuffled.map(w => `
                 <span class="word">
                     ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
                 </span>
@@ -87,11 +97,14 @@
             activeCharIdx = 0;
             correctChars = 0;
             wordsCompleted = 0;
+            combo = 0;
+            currentWordPerfect = true;
             startTime = null;
             container.style.top = "0px";
             
             wpmDisplay.innerText = "0";
             wordDisplay.innerText = "0";
+            comboDisplay.innerText = "0";
 
             container.innerHTML = generateWords(100);
             container.querySelectorAll('.word')[0].classList.add('active');
@@ -105,8 +118,13 @@
             wordDisplay.innerText = wordsCompleted;
         }
 
+        function bumpCombo() {
+            comboContainer.classList.add('bump');
+            setTimeout(() => comboContainer.classList.remove('bump'), 150);
+        }
+
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') { // Quick reset with Tab
+            if (e.key === 'Tab') {
                 e.preventDefault();
                 resetGame();
                 return;
@@ -132,10 +150,20 @@
                 }
             } else if (e.key === ' ') {
                 if (activeCharIdx > 0) {
+                    // Check Combo
+                    if (currentWordPerfect && activeCharIdx === letters.length) {
+                        combo++;
+                        bumpCombo();
+                    } else {
+                        combo = 0;
+                    }
+                    comboDisplay.innerText = combo;
+
                     currentWord.classList.remove('active');
                     activeWordIdx++;
                     activeCharIdx = 0;
                     wordsCompleted++;
+                    currentWordPerfect = true; // Reset for next word
                     
                     if (activeWordIdx < words.length) {
                         const nextWord = words[activeWordIdx];
@@ -143,7 +171,6 @@
                         handleScroll(nextWord);
                     }
 
-                    // Infinite logic: If we are nearing the end of the rendered list, add more
                     if (activeWordIdx > words.length - 10) {
                         container.innerHTML += generateWords(50);
                     }
@@ -156,8 +183,12 @@
                         correctChars++;
                     } else {
                         letters[activeCharIdx].classList.add('incorrect');
+                        currentWordPerfect = false; // Mistake made!
                     }
                     activeCharIdx++;
+                } else {
+                    // Typing past the word length also breaks perfection
+                    currentWordPerfect = false;
                 }
             }
         });
