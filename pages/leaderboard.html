@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="../data/css/root.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+        }
+
         body { 
             background-color: var(--bg); 
             color: var(--text-bright); 
@@ -144,8 +150,7 @@
 <div class="container">
     <div class="header">
         <h1><i class="fa-solid fa-trophy"></i> Leaderboard</h1>
-        <div class="mode-nav" id="mode-nav">
-            </div>
+        <div class="mode-nav" id="mode-nav"></div>
     </div>
 
     <div class="board-card">
@@ -286,12 +291,24 @@
 
         pageData.forEach((s, i) => {
             const absoluteRank = startIndex + i + 1;
-            const nameColor = absoluteRank === 1 ? 'var(--firstplace)' : 'inherit';
+            
+            // Logic for top 3 colors and special 1st place icon
+            let rowStyle = 'color: inherit';
+            let crownIcon = '';
+
+            if (absoluteRank === 1) {
+                rowStyle = `color: var(--gold); font-weight: 700;`;
+                crownIcon = '<i class="fa-solid fa-crown" style="margin-right: 8px; font-size: 0.8rem;"></i>';
+            } else if (absoluteRank === 2) {
+                rowStyle = `color: var(--silver); font-weight: 600;`;
+            } else if (absoluteRank === 3) {
+                rowStyle = `color: var(--bronze); font-weight: 600;`;
+            }
 
             body.innerHTML += `
                 <tr>
-                    <td class="rank-col">${absoluteRank}</td>
-                    <td class="user-col" style="color: ${nameColor}">${s.username}</td>
+                    <td class="rank-col" style="${rowStyle}">${absoluteRank}</td>
+                    <td class="user-col" style="${rowStyle}">${crownIcon}${s.username}</td>
                     <td class="wpm-col">${s.wpm}</td>
                     <td class="acc-col">${s.accuracy}%</td>
                 </tr>`;
