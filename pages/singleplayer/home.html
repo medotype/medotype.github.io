@@ -335,28 +335,32 @@ try {
         }
 
         async function finish() {
-            clearInterval(timerInterval);
-            const durationMinutes = (Date.now() - startTime) / 60000;
-            const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
-            const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
+    clearInterval(timerInterval);
+    const durationMinutes = (Date.now() - startTime) / 60000;
+    const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
+    const acc = totalKeystrokes > 0 ? Math.round((correctChars / totalKeystrokes) * 100) : 0;
 
-            let saved = false;
-            const { data: { session } } = await _supabase.auth.getSession();
+    let saved = false;
+    const { data: { session } } = await _supabase.auth.getSession();
 
-            if (session) {
-                const { error } = await _supabase
-                    .from('scores')
-                    .insert([{ 
-                        user_id: session.user.id, 
-                        wpm: wpm, 
-                        accuracy: acc, 
-                        mode: activeModeConfig.id
-                    }]);
-                if (!error) saved = true;
-            }
 
-            window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
-        }
+    const isWorthyScore = wpm >= 10 && acc >= 50;
+
+    if (session && isWorthyScore) {
+        const { error } = await _supabase
+            .from('scores')
+            .insert([{ 
+                user_id: session.user.id, 
+                wpm: wpm, 
+                accuracy: acc, 
+                mode: activeModeConfig.id
+            }]);
+        if (!error) saved = true;
+    }
+
+
+    window.location.href = `results.html?wpm=${wpm}&acc=${acc}&mode=${activeModeConfig.id}&saved=${saved}`;
+}
 
         initModes();
     </script>
