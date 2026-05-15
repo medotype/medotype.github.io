@@ -16,8 +16,15 @@
         #nav { margin-bottom: 3rem; display: inline-flex; background: var(--card-bg); padding: 6px; border-radius: 12px; gap: 5px; }
         
         /* Stats Header (Timer & Combo) */
-        .header-stats { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; margin: 0 auto 1.5rem auto; height: 2rem; }
-        #live-stat { font-size: 1.2rem; font-weight: 300; color: var(--text-faded); }
+.header-stats { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 50px; /* Consistent spacing */
+    width: 100%; 
+    margin-bottom: 2rem; 
+    height: 2rem; 
+}        #live-stat { font-size: 1.2rem; font-weight: 300; color: var(--text-faded); }
         #combo-stat { font-size: 1.2rem; font-weight: 600; color: var(--accent); opacity: 0; transition: opacity 0.3s, transform 0.1s; }
         #combo-stat.visible { opacity: 1; }
         #combo-stat.broken { color: var(--error); transform: translateX(-5px); }
@@ -33,14 +40,26 @@
         .letter.incorrect { color: var(--error); border-bottom: 2px solid var(--error); }
         
         /* The Caret (Cursor) */
-        .letter.active-char::before {
-            content: ''; position: absolute; left: -1px; top: 10%; height: 80%; width: 2px;
-            background-color: var(--accent); animation: blink 1s infinite; border-radius: 2px;
-        }
-        .word.active-end::after {
-            content: ''; position: absolute; right: -6px; top: 10%; height: 80%; width: 2px;
-            background-color: var(--accent); animation: blink 1s infinite; border-radius: 2px;
-        }
+.letter.active-char::before {
+    content: ''; 
+    position: absolute; 
+    left: -2px; 
+    top: 15%; 
+    height: 70%; 
+    width: 2px;
+    background-color: var(--accent); 
+    animation: blink 1s infinite;
+}
+.word.active-end::after {
+    content: ''; 
+    position: absolute; 
+    right: -6px; 
+    top: 15%; 
+    height: 70%; 
+    width: 2px;
+    background-color: var(--accent); 
+    animation: blink 1s infinite;
+}
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         
         #results-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card-bg); padding: 3rem; border-radius: 24px; width: 100%; max-width: 400px; display: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 10; }
@@ -168,20 +187,24 @@
             }
         }
 
-        function updateCaret() {
-            document.querySelectorAll('.active-char, .active-end').forEach(el => el.classList.remove('active-char', 'active-end'));
-            const words = container.querySelectorAll('.word');
-            if(activeWordIdx >= words.length) return;
-            
-            const currentWord = words[activeWordIdx];
-            const letters = currentWord.querySelectorAll('.letter');
-            
-            if (activeCharIdx < letters.length) {
-                letters[activeCharIdx].classList.add('active-char');
-            } else {
-                currentWord.classList.add('active-end');
-            }
-        }
+function updateCaret() {
+    document.querySelectorAll('.active-char, .active-end, .word.active').forEach(el => {
+        el.classList.remove('active-char', 'active-end', 'active');
+    });
+
+    const words = container.querySelectorAll('.word');
+    const currentWord = words[activeWordIdx];
+    if (!currentWord) return;
+
+    currentWord.classList.add('active');
+    const letters = currentWord.querySelectorAll('.letter');
+
+    if (activeCharIdx < letters.length) {
+        letters[activeCharIdx].classList.add('active-char');
+    } else {
+        currentWord.classList.add('active-end');
+    }
+}
 
         function updateCombo(reset = false) {
             if (reset) {
@@ -334,7 +357,6 @@
             let saved = false;
             const { data: { session } } = await _supabase.auth.getSession();
 
-            // --- ANTI-CHEAT CALCULATION ---
             let isBot = false;
             if (keyPressTimestamps.length > 10) {
                 let intervals = [];
