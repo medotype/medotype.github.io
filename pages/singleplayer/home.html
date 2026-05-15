@@ -40,16 +40,23 @@
         
         .stat-box i { color: var(--accent); font-size: 1.1rem; }
         
-        #combo-stat { opacity: 0; transition: opacity 0.3s, transform 0.1s; }
-        #combo-stat.visible { opacity: 1; }
+#combo-stat { transition: transform 0.1s; }
         #combo-stat.broken { color: var(--error); transform: translateX(-5px); }
+        #combo-stat.broken i { color: var(--error); }
         #combo-stat.broken i { color: var(--error); }
 
         #typing-viewport { height: 90px; overflow: hidden; position: relative; margin-bottom: 2rem; }
         #word-container { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; position: relative; top: 0; transition: top 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        .word { font-size: 2rem; font-weight: 400; color: var(--text-faded); letter-spacing: -0.02em; position: relative; }
-        
+.word { 
+            font-size: 2rem; 
+            font-weight: 400; 
+            color: var(--text-faded); 
+            letter-spacing: -0.02em; 
+            position: relative; 
+            display: inline-block; /* This prevents the word from splitting into two rows */
+            white-space: nowrap;   /* Ensures the cursor doesn't push a letter down */
+        }        
         .letter { position: relative; transition: color 0.1s ease; }
         .letter.correct { color: var(--text-bright); }
         .letter.incorrect { color: var(--error); border-bottom: 2px solid var(--error); }
@@ -263,7 +270,6 @@
             currentCombo = 0;
             comboVal.innerText = "0";
             wpmVal.innerText = "0";
-            comboStat.classList.remove('visible');
 
             container.style.top = "0px";
             results.style.display = 'none';
@@ -318,8 +324,6 @@
             if (!isStarted && e.key.length === 1) {
                 isStarted = true;
                 startTime = Date.now();
-                comboStat.classList.add('visible');
-                // Consolidated Timer & Live Stats into one loop
                 timerInterval = setInterval(updateLiveStats, 1000);
             }
 
