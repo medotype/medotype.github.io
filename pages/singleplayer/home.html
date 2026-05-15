@@ -15,51 +15,68 @@
         
         #nav { margin-bottom: 3rem; display: inline-flex; background: var(--card-bg); padding: 6px; border-radius: 12px; gap: 5px; }
         
-        /* Stats Header (Timer & Combo) */
-.header-stats { 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    gap: 50px; /* Consistent spacing */
-    width: 100%; 
-    margin-bottom: 2rem; 
-    height: 2rem; 
-}        #live-stat { font-size: 1.2rem; font-weight: 300; color: var(--text-faded); }
-        #combo-stat { font-size: 1.2rem; font-weight: 600; color: var(--accent); opacity: 0; transition: opacity 0.3s, transform 0.1s; }
+        /* Smooth Stats Header */
+        .header-stats { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 40px; 
+            width: 100%; 
+            margin-bottom: 2rem; 
+            height: 2rem; 
+        }
+        
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--text-faded);
+            min-width: 90px;
+            justify-content: center;
+            font-variant-numeric: tabular-nums; /* Stops numbers from shifting widths */
+        }
+        
+        .stat-box i { color: var(--accent); font-size: 1.1rem; }
+        
+        #combo-stat { opacity: 0; transition: opacity 0.3s, transform 0.1s; }
         #combo-stat.visible { opacity: 1; }
         #combo-stat.broken { color: var(--error); transform: translateX(-5px); }
+        #combo-stat.broken i { color: var(--error); }
 
         #typing-viewport { height: 90px; overflow: hidden; position: relative; margin-bottom: 2rem; }
-        #word-container { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; position: relative; top: 0; transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #word-container { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; position: relative; top: 0; transition: top 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         
         .word { font-size: 2rem; font-weight: 400; color: var(--text-faded); letter-spacing: -0.02em; position: relative; }
-        .word.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; opacity: 0.3; }
         
-        .letter { position: relative; }
+        .letter { position: relative; transition: color 0.1s ease; }
         .letter.correct { color: var(--text-bright); }
         .letter.incorrect { color: var(--error); border-bottom: 2px solid var(--error); }
         
         /* The Caret (Cursor) */
-.letter.active-char::before {
-    content: ''; 
-    position: absolute; 
-    left: -2px; 
-    top: 15%; 
-    height: 70%; 
-    width: 2px;
-    background-color: var(--accent); 
-    animation: blink 1s infinite;
-}
-.word.active-end::after {
-    content: ''; 
-    position: absolute; 
-    right: -6px; 
-    top: 15%; 
-    height: 70%; 
-    width: 2px;
-    background-color: var(--accent); 
-    animation: blink 1s infinite;
-}
+        .letter.active-char::before {
+            content: ''; 
+            position: absolute; 
+            left: -2px; 
+            top: 15%; 
+            height: 70%; 
+            width: 2px;
+            background-color: var(--accent); 
+            animation: blink 1s infinite;
+            border-radius: 2px;
+        }
+        .word.active-end::after {
+            content: ''; 
+            position: absolute; 
+            right: -6px; 
+            top: 15%; 
+            height: 70%; 
+            width: 2px;
+            background-color: var(--accent); 
+            animation: blink 1s infinite;
+            border-radius: 2px;
+        }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         
         #results-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card-bg); padding: 3rem; border-radius: 24px; width: 100%; max-width: 400px; display: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 10; }
@@ -87,8 +104,15 @@
         </div>
         
         <div class="header-stats">
-            <div id="live-stat">Loading modes...</div>
-            <div id="combo-stat"><i class="fa-solid fa-fire"></i> <span id="combo-val">0</span></div>
+            <div id="mode-stat-container" class="stat-box">
+                <i id="mode-icon" class="fa-solid fa-clock"></i> <span id="stat-val">--</span>
+            </div>
+            <div id="live-wpm-container" class="stat-box">
+                <i class="fa-solid fa-bolt"></i> <span id="wpm-val">0</span>
+            </div>
+            <div id="combo-stat" class="stat-box">
+                <i class="fa-solid fa-fire"></i> <span id="combo-val">0</span>
+            </div>
         </div>
 
         <div id="typing-viewport">
@@ -125,9 +149,11 @@
         let currentCombo = 0;
 
         const container = document.getElementById('word-container');
-        const liveStat = document.getElementById('live-stat');
+        const statVal = document.getElementById('stat-val');
+        const wpmVal = document.getElementById('wpm-val');
         const comboStat = document.getElementById('combo-stat');
         const comboVal = document.getElementById('combo-val');
+        const modeIcon = document.getElementById('mode-icon');
         const results = document.getElementById('results-screen');
 
         window.addEventListener('click', function(e) {
@@ -144,7 +170,7 @@
                 if (availableModes.length > 0) selectMode(availableModes[0]);
             } catch (e) {
                 console.error(e);
-                liveStat.innerText = "Error loading modes";
+                statVal.innerText = "Err";
             }
         }
 
@@ -183,28 +209,29 @@
                 else throw new Error("Wordlist is empty");
             } catch (err) {
                 console.error("Failed to load words:", err);
-                liveStat.innerText = "Error loading words";
+                statVal.innerText = "Err";
             }
         }
 
-function updateCaret() {
-    document.querySelectorAll('.active-char, .active-end, .word.active').forEach(el => {
-        el.classList.remove('active-char', 'active-end', 'active');
-    });
+        function updateCaret() {
+            // Scrub all existing active states
+            document.querySelectorAll('.active-char, .active-end, .word.active').forEach(el => {
+                el.classList.remove('active-char', 'active-end', 'active');
+            });
 
-    const words = container.querySelectorAll('.word');
-    const currentWord = words[activeWordIdx];
-    if (!currentWord) return;
+            const words = container.querySelectorAll('.word');
+            const currentWord = words[activeWordIdx];
+            if (!currentWord) return;
 
-    currentWord.classList.add('active');
-    const letters = currentWord.querySelectorAll('.letter');
+            currentWord.classList.add('active');
+            const letters = currentWord.querySelectorAll('.letter');
 
-    if (activeCharIdx < letters.length) {
-        letters[activeCharIdx].classList.add('active-char');
-    } else {
-        currentWord.classList.add('active-end');
-    }
-}
+            if (activeCharIdx < letters.length) {
+                letters[activeCharIdx].classList.add('active-char');
+            } else {
+                currentWord.classList.add('active-end');
+            }
+        }
 
         function updateCombo(reset = false) {
             if (reset) {
@@ -216,7 +243,6 @@ function updateCaret() {
             }
             comboVal.innerText = currentCombo;
             
-            // Pulse effect every 10 combo
             if (currentCombo > 0 && currentCombo % 10 === 0) {
                 comboStat.style.transform = "scale(1.2)";
                 setTimeout(() => comboStat.style.transform = "scale(1)", 150);
@@ -236,22 +262,28 @@ function updateCaret() {
             keyPressTimestamps = [];
             currentCombo = 0;
             comboVal.innerText = "0";
+            wpmVal.innerText = "0";
             comboStat.classList.remove('visible');
 
             container.style.top = "0px";
             results.style.display = 'none';
             container.classList.remove('hidden');
             
-            if (activeModeConfig.type === 'time') liveStat.innerText = activeModeConfig.value;
-            else liveStat.innerText = `0 / ${activeModeConfig.value}`;
+            if (activeModeConfig.type === 'time') {
+                modeIcon.className = 'fa-solid fa-clock';
+                statVal.innerText = activeModeConfig.value;
+            } else {
+                modeIcon.className = 'fa-solid fa-font';
+                statVal.innerText = `0 / ${activeModeConfig.value}`;
+            }
 
             if (!wordsList || wordsList.length === 0) return;
 
             const count = activeModeConfig.renderCount || 50;
             const shuffled = [...wordsList].sort(() => Math.random() - 0.5).slice(0, count);
             
-            container.innerHTML = shuffled.map((w, i) => `
-                <span class="word ${i === 0 ? 'active' : ''}">
+            container.innerHTML = shuffled.map((w) => `
+                <span class="word">
                     ${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}
                 </span>
             `).join('');
@@ -259,10 +291,27 @@ function updateCaret() {
             updateCaret();
         }
 
+        function updateLiveStats() {
+            if (!startTime) return;
+            const elapsedMs = Date.now() - startTime;
+            const durationMinutes = elapsedMs / 60000;
+            const currentWpm = Math.round((correctChars / 5) / durationMinutes) || 0;
+            wpmVal.innerText = currentWpm;
+
+            if (activeModeConfig.type === 'time') {
+                let left = Math.ceil(activeModeConfig.value - (elapsedMs / 1000));
+                if (left <= 0) {
+                    left = 0;
+                    finish();
+                }
+                statVal.innerText = left;
+            }
+        }
+
         window.addEventListener('keydown', (e) => {
-            if (results.style.display === 'block' || !activeModeConfig || (isStarted && !startTime)) return;
+            if (results.style.display === 'block' || !activeModeConfig) return;
             
-            // Ignore system keys (Shift, Ctrl, Alt, etc.) to not break the combo
+            if (e.key === 'Tab') { e.preventDefault(); resetGame(); return; }
             if (e.key.length !== 1 && e.key !== 'Backspace' && e.key !== ' ') return;
             if (e.key === ' ') e.preventDefault();
 
@@ -270,7 +319,8 @@ function updateCaret() {
                 isStarted = true;
                 startTime = Date.now();
                 comboStat.classList.add('visible');
-                if (activeModeConfig.type === 'time') startTimer();
+                // Consolidated Timer & Live Stats into one loop
+                timerInterval = setInterval(updateLiveStats, 1000);
             }
 
             const words = container.querySelectorAll('.word');
@@ -283,31 +333,26 @@ function updateCaret() {
                     activeCharIdx--;
                     letters[activeCharIdx].className = 'letter';
                 } else if (activeWordIdx > 0) {
-                    currentWord.classList.remove('active');
+                    // Repaired Backspace Logic
                     activeWordIdx--;
                     const prevWord = words[activeWordIdx];
-                    prevWord.classList.add('active');
                     const prevLetters = prevWord.querySelectorAll('.letter');
                     activeCharIdx = prevLetters.length;
                     handleScroll(prevWord);
-                    if (activeModeConfig.type === 'words') liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
+                    if (activeModeConfig.type === 'words') statVal.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
                 }
             } else if (e.key === ' ') {
                 if (activeCharIdx > 0) {
                     if (activeModeConfig.type === 'words' && activeWordIdx + 1 >= activeModeConfig.value) {
                         finish(); return;
                     }
-                    currentWord.classList.remove('active');
                     activeWordIdx++;
                     activeCharIdx = 0;
                     
                     if (activeWordIdx < words.length) {
-                        const nextWord = words[activeWordIdx];
-                        nextWord.classList.add('active');
-                        handleScroll(nextWord);
+                        handleScroll(words[activeWordIdx]);
                     }
-                    
-                    if (activeModeConfig.type === 'words') liveStat.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
+                    if (activeModeConfig.type === 'words') statVal.innerText = `${activeWordIdx} / ${activeModeConfig.value}`;
                 }
             } else if (e.key.length === 1) {
                 if (activeCharIdx < letters.length) {
@@ -339,15 +384,6 @@ function updateCaret() {
             if (offset > 40) container.style.top = `-${offset}px`;
         }
 
-        function startTimer() {
-            let left = activeModeConfig.value;
-            timerInterval = setInterval(() => {
-                left--;
-                liveStat.innerText = left;
-                if (left <= 0) finish();
-            }, 1000);
-        }
-
         async function finish() {
             clearInterval(timerInterval);
             const durationMinutes = (Date.now() - startTime) / 60000;
@@ -368,7 +404,6 @@ function updateCaret() {
                 let variance = intervals.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / intervals.length;
                 let stdDev = Math.sqrt(variance);
 
-                // If deviation is too perfect (under 5ms) or typing impossibly fast (300+ wpm)
                 if (stdDev < 5 || wpm > 300) {
                     console.warn("Anti-Cheat: Suspicious typing rhythm or speed detected.");
                     isBot = true;
