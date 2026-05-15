@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeDoType | Practice</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../data/css/root.css">
+    <script src="../../data/js/theme.js"></script>
+    <style>
+        body { background-color: var(--bg); color: var(--text-bright); font-family: var(--font); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #app { width: 100%; max-width: 850px; text-align: center; padding: 2rem; position: relative; }
+        
+        /* Sleek Stats Header (Matching Singleplayer) */
+        .header-stats { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 40px; 
+            width: 100%; 
+            margin-bottom: 2rem; 
+            height: 2rem; 
+        }
+        
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--text-faded);
+            min-width: 100px;
+            justify-content: center;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .stat-box i { color: var(--accent); font-size: 1.1rem; }
+        #combo-stat { transition: transform 0.1s; }
+        #combo-stat.broken { color: var(--error); transform: translateX(-5px); }
+        #combo-stat.broken i { color: var(--error); }
+
+        #typing-viewport { height: 90px; overflow: hidden; position: relative; margin-bottom: 2rem; }
+        #word-container { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: center; position: relative; top: 0; transition: top 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .word { 
+            font-size: 2rem; 
+            font-weight: 400; 
+            color: var(--text-faded); 
+            letter-spacing: -0.02em; 
+            position: relative; 
+            display: inline-block; /* Prevents split words */
+            white-space: nowrap;   /* Prevents cursor-push wrapping */
+        }
+        
+        .letter { position: relative; transition: color 0.1s ease; }
+        .letter.correct { color: var(--text-bright); }
+        .letter.incorrect { color: var(--error); border-bottom: 2px solid var(--error); }
+        
+        /* The Professional Caret */
+        .letter.active-char::before {
+            content: ''; 
+            position: absolute; 
+            left: -2px; 
+            top: 15%; 
+            height: 70%; 
+            width: 2px;
+            background-color: var(--accent); 
+            animation: blink 1s infinite;
+            border-radius: 2px;
+        }
+        .word.active-end::after {
+            content: ''; 
+            position: absolute; 
+            right: -6px; 
+            top: 15%; 
+            height: 70%; 
+            width: 2px;
+            background-color: var(--accent); 
+            animation: blink 1s infinite;
+            border-radius: 2px;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        
+        #restart-btn { 
+            margin-top: 2rem; 
+            background: var(--card-bg); 
+            color: var(--text-faded); 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 10px; 
+            font-family: var(--font); 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        #restart-btn:hover { color: var(--text-bright); background: rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div class="header-stats">
+            <div class="stat-box">
+                <i class="fa-solid fa-bolt"></i> <span id="wpm-val">0</span>
+            </div>
+            <div id="combo-stat" class="stat-box">
+                <i class="fa-solid fa-fire"></i> <span id="combo-val">0</span>
+            </div>
+            <div class="stat-box">
+                <i class="fa-solid fa-font"></i> <span id="word-val">0</span>
+            </div>
+        </div>
+
+        <div id="typing-viewport">
+            <div id="word-container"></div>
+        </div>
+
+        <button id="restart-btn" onclick="resetGame()"><i class="fa-solid fa-rotate-right"></i> Reset Practice</button>
+    </div>
+
+    <script>
+        let wordsList = [];
+        let isStarted = false;
+        let activeWordIdx = 0;
+        let activeCharIdx = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let correctChars = 0;
+        let wordsCompleted = 0;
+        let combo = 0;
+        let currentWordPerfect = true;
+
+        const container = document.getElementById('word-container');
+        const wpmDisplay = document.getElementById('wpm-val');
+        const wordDisplay = document.getElementById('word-val');
+        const comboDisplay = document.getElementById('combo-val');
+        const comboStat = document.getElementById('combo-stat');
+
+        async function initPractice() {
+            try {
+                const resp = await fetch('/data/json/wordlistcommon.json');
+                if (!resp.ok) throw new Error("Wordlist not found");
+                wordsList = await resp.json();
+                resetGame();
+            } catch (err) {
+                console.error(err);
+                container.innerText = "Error loading practice words";
+            }
+        }
+
+        function createWordHTML(w) {
+            return `<span class="word">${w.split('').map(c => `<span class="letter">${c}</span>`).join('')}</span>`;
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            isStarted = false;
+            activeWordIdx = 0;
+            activeCharIdx = 0;
+            correctChars = 0;
+            wordsCompleted = 0;
+            combo = 0;
+            currentWordPerfect = true;
+            startTime = null;
+            
+            container.style.top = "0px";
+            wpmDisplay.innerText = "0";
+            wordDisplay.innerText = "0";
+            comboDisplay.innerText = "0";
+
+            const initialWords = [...wordsList].sort(() => Math.random() - 0.5).slice(0, 50);
+            container.innerHTML = initialWords.map(createWordHTML).join('');
+            
+            updateCaret();
+        }
+
+        function updateCaret() {
+            document.querySelectorAll('.active-char, .active-end, .word.active').forEach(el => {
+                el.classList.remove('active-char', 'active-end', 'active');
+            });
+
+            const words = container.querySelectorAll('.word');
+            const currentWord = words[activeWordIdx];
+            if (!currentWord) return;
+
+            currentWord.classList.add('active');
+            const letters = currentWord.querySelectorAll('.letter');
+
+            if (activeCharIdx < letters.length) {
+                letters[activeCharIdx].classList.add('active-char');
+            } else {
+                currentWord.classList.add('active-end');
+            }
+        }
+
+        function updateStats() {
+            if (!startTime) return;
+            const durationMinutes = (Date.now() - startTime) / 60000;
+            const wpm = Math.round((correctChars / 5) / durationMinutes) || 0;
+            wpmDisplay.innerText = wpm;
+            wordDisplay.innerText = wordsCompleted;
+        }
+
+        function handleCombo(isCorrect) {
+            if (!isCorrect) {
+                combo = 0;
+                comboStat.classList.add('broken');
+                setTimeout(() => comboStat.classList.remove('broken'), 200);
+            }
+            comboDisplay.innerText = combo;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') { e.preventDefault(); resetGame(); return; }
+            if (e.key.length !== 1 && e.key !== 'Backspace' && e.key !== ' ') return;
+            if (e.key === ' ') e.preventDefault();
+
+            if (!isStarted && e.key.length === 1) {
+                isStarted = true;
+                startTime = Date.now();
+                timerInterval = setInterval(updateStats, 1000);
+            }
+
+            const words = container.querySelectorAll('.word');
+            const currentWord = words[activeWordIdx];
+            if (!currentWord) return;
+            const letters = currentWord.querySelectorAll('.letter');
+
+            if (e.key === 'Backspace') {
+                if (activeCharIdx > 0) {
+                    activeCharIdx--;
+                    letters[activeCharIdx].className = 'letter';
+                } else if (activeWordIdx > 0) {
+                    // Repaired Backspace: Snaps to end of previous word
+                    activeWordIdx--;
+                    const prevWord = words[activeWordIdx];
+                    activeCharIdx = prevWord.querySelectorAll('.letter').length;
+                    handleScroll(prevWord);
+                }
+            } else if (e.key === ' ') {
+                if (activeCharIdx > 0) {
+                    // Check if word was perfect for combo
+                    if (currentWordPerfect && activeCharIdx === letters.length) {
+                        combo++;
+                        comboStat.style.transform = "scale(1.2)";
+                        setTimeout(() => comboStat.style.transform = "scale(1)", 100);
+                    } else {
+                        combo = 0;
+                        handleCombo(false);
+                    }
+                    comboDisplay.innerText = combo;
+
+                    activeWordIdx++;
+                    activeCharIdx = 0;
+                    wordsCompleted++;
+                    currentWordPerfect = true; 
+                    
+                    if (activeWordIdx < words.length) {
+                        handleScroll(words[activeWordIdx]);
+                    }
+
+                    // Infinite loading logic
+                    if (activeWordIdx > words.length - 10) {
+                        const more = [...wordsList].sort(() => Math.random() - 0.5).slice(0, 20);
+                        container.insertAdjacentHTML('beforeend', more.map(createWordHTML).join(''));
+                    }
+                    updateStats();
+                }
+            } else if (e.key.length === 1) {
+                if (activeCharIdx < letters.length) {
+                    if (e.key === letters[activeCharIdx].innerText) {
+                        letters[activeCharIdx].classList.add('correct');
+                        correctChars++;
+                    } else {
+                        letters[activeCharIdx].classList.add('incorrect');
+                        currentWordPerfect = false; 
+                    }
+                    activeCharIdx++;
+                } else {
+                    currentWordPerfect = false; // Typed beyond word length
+                }
+            }
+            updateCaret();
+        });
+
+        function handleScroll(activeWord) {
+            const offset = activeWord.offsetTop;
+            if (offset > 40) container.style.top = `-${offset}px`;
+        }
+
+        initPractice();
+    </script>
+</body>
+</html>

@@ -14,15 +14,15 @@
             font-family: var(--font); 
             margin: 0; 
             display: flex; 
-            flex-direction: column;
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
+            overflow: hidden;
         }
 
         #menu-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             padding: 2rem;
             text-align: center;
         }
@@ -37,17 +37,19 @@
             animation: fadeIn 0.8s ease;
         }
 
+        /* Unified Grid Structure */
         .modes-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            gap: 24px;
+            animation: fadeIn 1s ease;
         }
 
         .mode-card {
             background: var(--card-bg);
             border: 1px solid rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            padding: 50px 25px;
+            border-radius: 24px;
+            padding: 60px 30px;
             text-decoration: none;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
@@ -58,17 +60,16 @@
             cursor: pointer;
         }
 
-        /* Hover States for Active Cards */
+        /* Hover States */
         .mode-card:not(.locked):hover {
             background: rgba(255, 255, 255, 0.04);
             border-color: var(--accent);
             transform: translateY(-8px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
-        /* Card Elements */
         .mode-card i {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             color: var(--text-faded);
             margin-bottom: 1.5rem;
             transition: 0.3s;
@@ -76,7 +77,7 @@
 
         .mode-card h2 {
             margin: 0;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 600;
             color: var(--text-bright);
             letter-spacing: -0.01em;
@@ -84,34 +85,29 @@
 
         .mode-card p {
             margin-top: 12px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-faded);
-            line-height: 1.5;
+            line-height: 1.6;
             font-weight: 300;
         }
 
-        /* Hover Icon Interaction */
         .mode-card:not(.locked):hover i {
             color: var(--accent);
             transform: scale(1.1);
         }
 
-        /* Locked State */
+        /* Locked State Updates */
         .mode-card.locked {
-            opacity: 0.3;
+            opacity: 0.4;
             cursor: not-allowed;
-            filter: grayscale(1);
+            filter: grayscale(0.8);
         }
 
-        .mode-card.locked i {
-            font-size: 1.8rem;
-        }
-
-        /* Decorative Bottom Bar on Hover */
+        /* Animated underline on hover */
         .mode-card::after {
             content: '';
             position: absolute;
-            bottom: 12px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
@@ -128,18 +124,23 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @media (max-width: 850px) {
+        /* Responsive handling */
+        @media (max-width: 900px) {
+            .modes-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            body { height: auto; padding: 4rem 0; overflow-y: auto; }
             .modes-grid {
                 grid-template-columns: 1fr;
                 max-width: 400px;
                 margin: 0 auto;
-            }
-            .mode-card {
-                padding: 30px;
             }
         }
     </style>
@@ -156,17 +157,17 @@
                 <p>Standard typing test with customizable modes and personal bests.</p>
             </a>
 
-            <div class="mode-card locked">
-                <i class="fa-solid fa-lock"></i>
-                <h2>Ranked</h2>
-                <p>Competitive matchmaking. Climb the ranks against others. (Coming soon...)</p>
-            </div>
+            <a href="practice/home.html" class="mode-card">
+                <i class="fa-solid fa-dumbbell"></i>
+                <h2>Practice</h2>
+                <p>Sharpen your speed with infinite typing and live combo tracking.</p>
+            </a>
 
             <div class="mode-card locked">
                 <i class="fa-solid fa-lock"></i>
-                <h2>Practice</h2>
-                <p>Warm up skills before playing. Does not save to leaderboards or rank. (Coming soon...)</p>
-            </div>
+                <h2>Ranked</h2>
+                <p>Competitive matchmaking and global leaderboards. Coming soon.</p>
+            </a>
         </div>
     </div>
 

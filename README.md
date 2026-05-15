@@ -7,6 +7,7 @@ Simplistic typing game.
 ## Features
 
 - Five different tests for the current gamemode
+- Practice mode
 - Automatic leaderboard
 - Account system
 - User searching
@@ -14,7 +15,6 @@ Simplistic typing game.
 
 ## To do
 - Ranked gamemode
-- Practice gamemode
 - Themes
 - Keyboard sounds
 - Daily modes system
