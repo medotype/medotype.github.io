@@ -1,14 +1,14 @@
-:root {
-    --bg: #0f172a;
-    --card-bg: #1e293b;
-    --text-faded: #94a3b8;
-    --text-bright: #f8fafc;
-    --accent: #3b82f6;
-    --error: #ef4444;
-    --success: #10b981;
-    --firstplace: #FFD700;
-    --font: 'Inter', sans-serif;
-}
+        :root {
+            --bg: #121213;
+            --card-bg: #1e1e1f;
+            --text-faded: #565656;
+            --text-bright: #ffffff;
+            --accent: #3b82f6;
+            --error: #ef4444;
+            --success: #10b981;
+            --firstplace: #FFD700;
+            --font: 'Inter', sans-serif;
+        }
 
 * {
     box-sizing: border-box;
