@@ -1,13 +1,5 @@
 :root {
-    --bg: #0e0e0f; 
-    --header-bg: rgba(18, 18, 19, 0.8);
-    --card-bg: #1e1e1f;
-    --text-faded: #646669;
-    --text-bright: #ffffff;
-    --accent: #3b82f6;
-    --font: 'Inter', sans-serif;
     --nav-height: 70px;
-    --border-color: rgba(255, 255, 255, 0.05);
 }
 
 body, html {
@@ -24,13 +16,13 @@ body, html {
 
 header {
     height: var(--nav-height);
-    background-color: var(--header-bg);
+    background-color: var(--card-bg);
     backdrop-filter: blur(10px); 
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 10%; 
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
     z-index: 100;
 }
 
@@ -44,15 +36,13 @@ header {
 
 .brand i {
     font-size: 1.5rem;
-    color: var(--accent);
-}
+    color: var(--accent);}
 
 .logo-text {
     font-weight: 600;
     font-size: 1.4rem;
     letter-spacing: -0.03em;
-    color: var(--text-bright);
-}
+    color: var(--text-bright);}
 
 .nav-links {
     display: flex;
@@ -64,7 +54,7 @@ header {
 }
 
 .nav-links a {
-    color: var(--text-faded);
+color: var(--text-faded);
     text-decoration: none;
     font-size: 1rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -75,7 +65,7 @@ header {
 }
 
 .nav-links a:hover, .nav-links a.active {
-    color: var(--accent);
+color: var(--accent);
     transform: translateY(-1px);
 }
 
@@ -129,8 +119,8 @@ footer {
 }
 
 .search-container {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background-color: var(--bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -144,7 +134,7 @@ footer {
 .search-container input {
     background: transparent;
     border: none;
-    color: var(--text-bright);
+color: var(--text-bright);
     padding: 8px 10px;
     outline: none;
     width: 100%;
