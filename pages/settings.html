@@ -4,112 +4,304 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MeDoType | Settings</title>
+    
+    <link rel="stylesheet" href="../data/css/root.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
-        body {
-            background-color: #121213; 
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+        * {
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
-        .container {
-            text-align: center;
-            max-width: 500px;
+        body {
+            background-color: var(--bg); 
+            color: var(--text-bright);
+            font-family: var(--font);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
             padding: 2rem;
         }
 
-        .gear-icon {
-            font-size: 4rem;
-            color: #3b82f6;
-            margin-bottom: 1.5rem;
-            animation: spin 5s linear infinite;;
+        .container {
+            width: 100%;
+            max-width: 800px;
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            gap: 1rem;
         }
 
-        h1 {
+        header h1 {
             font-size: 2.5rem;
             font-weight: 600;
             margin: 0;
             letter-spacing: -0.02em;
         }
 
-        .wip-badge {
-            display: inline-block;
-            margin-top: 1rem;
-            padding: 6px 14px;
-            background: #1e1e1f;
-            color: #3b82f6;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            border: 1px solid rgba(255,255,255,0.05);
+        .gear-icon {
+            font-size: 2.5rem;
+            color: var(--accent);
         }
 
-        p {
-            color: #565656;
-            line-height: 1.6;
-            margin-top: 1.5rem;
-            font-size: 1.1rem;
+        .settings-section {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .theme-preview {
-            margin-top: 2rem;
+        .settings-section h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            color: var(--text-faded);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            opacity: 0.5; /* Faded because it's WIP */
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .dot {
-            width: 20px;
-            height: 20px;
+        /* Coming Soon Badge */
+        .soon-badge {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.5rem;
+            border: 1px solid var(--accent);
+        }
+
+        /* Dimmed state for upcoming features */
+        .section-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Theme Grid */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .theme-card {
+            background: var(--bg);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-card:hover {
+            border-color: var(--text-faded);
+        }
+
+        .theme-card.active {
+            border-color: var(--accent);
+        }
+
+        .theme-colors {
+            display: flex;
+            gap: 5px;
+        }
+
+        .color-dot {
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            border: 2px solid #1e1e1f;
+        }
+
+        .theme-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-bright);
+        }
+
+        /* Sounds & Toggles */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .setting-info h3 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .setting-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-faded);
+        }
+
+        select {
+            background-color: var(--bg);
+            color: var(--text-bright);
+            border: 1px solid var(--text-faded);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-family: var(--font);
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        select:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--bg);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid var(--text-faded);
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: var(--text-faded);
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--bg);
+        }
+        input:disabled + .slider {
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <i class="fa-solid fa-gear gear-icon"></i>
-        <h1>Settings</h1>
-        <div class="wip-badge">Work in Progress</div>
-        
-        <p>
-            Custom themes are coming soon to MeDoType, along with keyboard sounds!
-        </p>
+        <header>
+            <i class="fa-solid fa-gear gear-icon"></i>
+            <h1>Settings</h1>
+        </header>
 
-        <div class="theme-preview">
-            <div class="dot" style="background: #3b82f6;"></div>
-            <div class="dot" style="background: #f5e076;"></div>
-            <div class="dot" style="background: #e11d48;"></div>
-            <div class="dot" style="background: #10b981;"></div>
+        <div class="settings-section">
+            <h2><i class="fa-solid fa-palette"></i> Appearance</h2>
+            <div class="theme-grid" id="themeGrid">
+                </div>
+        </div>
+
+        <div class="settings-section section-disabled">
+            <h2>
+                <i class="fa-solid fa-volume-high"></i> Audio
+                <span class="soon-badge">Coming Soon</span>
+            </h2>
+            
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Typing Sounds</h3>
+                    <p>Play a sound on every keystroke</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="soundToggle" disabled>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <h3>Sound Pack</h3>
+                    <p>Choose your keyboard switch style</p>
+                </div>
+                <select id="soundPack" disabled>
+                    <option value="mechanical">Mechanical (Blue Switches)</option>
+                    <option value="thock">Thocky (Linear Switches)</option>
+                    <option value="typewriter">Vintage Typewriter</option>
+                    <option value="soft">Soft Cherry Brown</option>
+                </select>
+            </div>
         </div>
     </div>
 
     <script>
+        const themes = [
+            { id: 'default', name: 'Midnight Slate', bg: '#0f172a', accent: '#3b82f6' },
+            { id: 'theme-carbon', name: 'Carbon', bg: '#151515', accent: '#f5e076' },
+            { id: 'theme-sakura', name: 'Sakura Noir', bg: '#181013', accent: '#f43f5e' },
+            { id: 'theme-cyberpunk', name: 'Cyberpunk', bg: '#080710', accent: '#ff007f' },
+            { id: 'theme-nordic', name: 'Nordic Frost', bg: '#0b131a', accent: '#22d3ee' },
+            { id: 'theme-emerald', name: 'Emerald', bg: '#09110e', accent: '#10b981' },
+            { id: 'theme-dracula', name: 'Dracula', bg: '#1e1e2e', accent: '#cba6f7' }
+        ];
 
-        (function() {
-            const savedTheme = localStorage.getItem('user-theme');
-            if (savedTheme === 'theme-carbon') {
-                document.querySelector('.gear-icon').style.color = '#f5e076';
-            } else if (savedTheme === 'theme-sakura') {
-                document.querySelector('.gear-icon').style.color = '#e11d48';
-            }
-        })();
+        const themeGrid = document.getElementById('themeGrid');
+        
+        const savedTheme = localStorage.getItem('user-theme') || 'default';
+
+        if (savedTheme !== 'default') document.body.className = savedTheme;
+
+        themes.forEach(theme => {
+            const card = document.createElement('div');
+            card.className = `theme-card ${savedTheme === theme.id ? 'active' : ''}`;
+            card.onclick = () => setTheme(theme.id);
+            
+            card.innerHTML = `
+                <div class="theme-colors">
+                    <div class="color-dot" style="background: ${theme.bg}; border: 1px solid var(--text-faded)"></div>
+                    <div class="color-dot" style="background: ${theme.accent}"></div>
+                </div>
+                <div class="theme-name">${theme.name}</div>
+            `;
+            themeGrid.appendChild(card);
+        });
+
+        function setTheme(themeId) {
+            document.body.className = themeId === 'default' ? '' : themeId;
+            localStorage.setItem('user-theme', themeId);
+
+            const cards = document.querySelectorAll('.theme-card');
+            cards.forEach((card, index) => {
+                if (themes[index].id === themeId) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+        }
     </script>
 </body>
 </html>
