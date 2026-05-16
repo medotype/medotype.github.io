@@ -90,14 +90,14 @@ iframe.loaded {
 
 footer {
     height: 50px;
-    background-color: var(--bg);
-    border-top: 1px solid var(--border-color);
+background-color: var(--card-bg);
+border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 10%;
     font-size: 0.8rem;
-    color: var(--text-faded);
+color: var(--text-faded);
 }
 
 .footer-left {
